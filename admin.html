@@ -1362,23 +1362,6 @@ body {
       <div class="form-group"><label>名称</label><input id="mToolName" placeholder="工具名称"></div>
       <div class="form-group"><label>分类标签</label><input id="mToolCategory" placeholder="如：设计工具 / AI 工具"></div>
       <div class="form-group"><label>简介</label><textarea id="mToolDesc" placeholder="工具简介"></textarea></div>
-      <div class="form-group">
-        <label>图标 / 封面</label>
-        <div class="upload-zone" id="toolUploadZone">
-          <input type="file" id="toolFileInput" accept="image/*" style="display:none;">
-          <div class="upload-icon">&#8679;</div>
-          <div class="upload-text">拖拽图片到此处，或 <strong>点击上传</strong></div>
-          <div class="upload-hint">支持 JPG、PNG、GIF、WebP（最大 10MB）</div>
-          <img class="upload-preview" id="toolPreview" alt="">
-          <button class="upload-remove" id="toolUploadRemove" onclick="removeToolUpload(event)">×</button>
-          <div class="upload-loading"><div class="upload-spinner"></div></div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>或粘贴图标链接</label>
-        <input type="text" id="mToolImageUrl" placeholder="https://example.com/icon.png（粘贴图片链接，可替代文件上传）" style="width:100%;padding:8px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:13px;">
-        <div style="font-size:11px;color:rgba(0,0,0,0.4);margin-top:4px;">推荐图床：imgbb.com（免费）｜ 粘贴后图标将使用此链接</div>
-      </div>
       <div class="form-group"><label>链接</label><input id="mToolLink" placeholder="工具网址（可选）"></div>
       <div class="form-actions">
         <button class="btn-cancel" onclick="closeModal()">取消</button>

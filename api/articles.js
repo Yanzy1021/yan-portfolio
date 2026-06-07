@@ -7,7 +7,13 @@ module.exports = async function handler(req, res) {
   const id = req.query.id;
 
   if (method === 'GET') {
-    const articles = await getData('articles') || [];
+    let articles = await getData('articles') || [];
+    // Sort by date descending (newest first)
+    articles = articles.sort(function(a, b) {
+      var da = (a.date || '').replace(/\./g, '-');
+      var db = (b.date || '').replace(/\./g, '-');
+      return db.localeCompare(da);
+    });
     if (req.query.page) {
       const result = paginate(articles, req.query.page, parseInt(req.query.limit) || 12);
       return res.json({
