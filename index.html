@@ -1436,8 +1436,8 @@ footer .footer-slogan {
 (function() {
 
   // ── Config ──
-  // 当通过 Node.js 服务访问时，API 在同域；直接打开 HTML 文件时使用默认数据
-  const IS_SERVER = window.location.protocol === 'http:' && window.location.hostname !== '';
+  // 只要不是本地文件直接打开（file: 协议），就通过 API 加载数据
+  const IS_SERVER = window.location.protocol !== 'file:';
   const API_BASE = '';
 
   // ── Default Data (fallback when no server) ──
