@@ -1352,10 +1352,8 @@ body {
   window.loadTools = loadTools;
 
   let editingToolId = null;
-  let toolUploadedUrl = '';
   window.openToolModal = function(id) {
     editingToolId = id || null;
-    toolUploadedUrl = '';
     const title = id ? '编辑工具' : '新增工具';
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').innerHTML = `
@@ -1373,21 +1371,6 @@ body {
         <button class="btn-submit" onclick="saveTool()">保存</button>
       </div>
     `;
-    const zone = document.getElementById('toolUploadZone');
-    const fileInput = document.getElementById('toolFileInput');
-    zone.addEventListener('click', function(e) {
-      if (e.target.closest('.upload-remove')) return;
-      fileInput.click();
-    });
-    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
-    zone.addEventListener('drop', function(e) {
-      e.preventDefault(); zone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) handleToolFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', function() {
-      if (fileInput.files.length > 0) handleToolFile(fileInput.files[0]);
-    });
     if (id) {
       api('GET', '/api/tools').then(tools => {
         const t = tools.find(x => x.id === id);
@@ -1397,7 +1380,6 @@ body {
           document.getElementById('mToolDesc').value = t.description || '';
           document.getElementById('mToolImageUrl').value = t.icon || '';
           document.getElementById('mToolLink').value = t.link || '';
-          if (t.icon) { toolUploadedUrl = t.icon; showToolPreview(t.icon); }
         }
       });
     }
@@ -1412,7 +1394,7 @@ body {
       name: document.getElementById('mToolName').value.trim(),
       category: document.getElementById('mToolCategory').value.trim(),
       description: document.getElementById('mToolDesc').value.trim(),
-      icon: toolUploadedUrl || imgUrl || '',
+      icon: imgUrl || '',
       link: document.getElementById('mToolLink').value.trim()
     };
     if (!data.name) { showToast('请输入工具名称', 'error'); return; }
