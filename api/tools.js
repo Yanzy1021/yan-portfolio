@@ -1,4 +1,4 @@
-// /api/tools - GET (list/paginate), POST (create)
+// /api/tools - GET (list/paginate), POST (create), PUT (update by id), DELETE (delete by id)
 const https = require('https');
 const http = require('http');
 const { getData, setData, paginate } = require('../lib/kv');
@@ -38,6 +38,8 @@ async function fetchFavicon(url) {
 
 module.exports = async function handler(req, res) {
   const method = req.method;
+  const id = req.query.id;
+
   if (method === 'GET') {
     const tools = await getData('tools') || [];
     if (req.query.page) {
@@ -69,6 +71,32 @@ module.exports = async function handler(req, res) {
     tools.push(tool);
     await setData('tools', tools);
     return res.json(tool);
+  }
+
+  if (method === 'PUT') {
+    const allowed = await requireAuth(req, res);
+    if (!allowed) return;
+    const tools = await getData('tools') || [];
+    const idx = tools.findIndex(t => t.id === id);
+    if (idx === -1) return res.status(404).json({ error: '工具不存在' });
+    const updated = { ...tools[idx], ...req.body, id: tools[idx].id, updatedAt: new Date().toISOString() };
+    if (!updated.icon && updated.link) {
+      try { const u = await fetchFavicon(updated.link); if (u) updated.icon = u; } catch(e) {}
+    }
+    tools[idx] = updated;
+    await setData('tools', tools);
+    return res.json(tools[idx]);
+  }
+
+  if (method === 'DELETE') {
+    const allowed = await requireAuth(req, res);
+    if (!allowed) return;
+    const tools = await getData('tools') || [];
+    const idx = tools.findIndex(t => t.id === id);
+    if (idx === -1) return res.status(404).json({ error: '工具不存在' });
+    tools.splice(idx, 1);
+    await setData('tools', tools);
+    return res.json({ success: true });
   }
 
   res.status(405).json({ error: 'Method not allowed' });

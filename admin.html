@@ -1142,7 +1142,7 @@ body {
     if (!data.title) { showToast('请输入标题', 'error'); return; }
     try {
       if (editingWorkId) {
-        await api('PUT', '/api/works/' + editingWorkId, data);
+        await api('PUT', '/api/works?id=' + editingWorkId, data);
         showToast('作品已更新', 'success');
       } else {
         await api('POST', '/api/works', data);
@@ -1159,7 +1159,7 @@ body {
   window.deleteWork = async function(id) {
     if (!confirm('确定删除这个作品吗？')) return;
     try {
-      await api('DELETE', '/api/works/' + id);
+      await api('DELETE', '/api/works?id=' + id);
       showToast('已删除', 'success');
       loadWorks();
       loadStats();
@@ -1281,7 +1281,7 @@ body {
     if (!data.title) { showToast('请输入标题', 'error'); return; }
     try {
       if (editingArticleId) {
-        await api('PUT', '/api/articles/' + editingArticleId, data);
+        await api('PUT', '/api/articles?id=' + editingArticleId, data);
         showToast('文章已更新', 'success');
       } else {
         await api('POST', '/api/articles', data);
@@ -1298,7 +1298,7 @@ body {
   window.deleteArticle = async function(id) {
     if (!confirm('确定删除这篇文章吗？')) return;
     try {
-      await api('DELETE', '/api/articles/' + id);
+      await api('DELETE', '/api/articles?id=' + id);
       showToast('已删除', 'success');
       loadArticles();
       loadStats();
@@ -1409,7 +1409,7 @@ body {
     if (!data.name) { showToast('请输入工具名称', 'error'); return; }
     try {
       if (editingToolId) {
-        await api('PUT', '/api/tools/' + editingToolId, data);
+        await api('PUT', '/api/tools?id=' + editingToolId, data);
         showToast('工具已更新', 'success');
       } else {
         await api('POST', '/api/tools', data);
@@ -1422,7 +1422,7 @@ body {
   window.deleteTool = async function(id) {
     if (!confirm('确定删除这个工具吗？')) return;
     try {
-      await api('DELETE', '/api/tools/' + id);
+      await api('DELETE', '/api/tools?id=' + id);
       showToast('已删除', 'success'); loadTools(); loadStats();
     } catch(e) { showToast('删除失败', 'error'); }
   };
