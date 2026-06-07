@@ -101,6 +101,20 @@ body {
 }
 .top-nav .nav-links a:hover { color: #1a1a2e; }
 .top-nav .nav-links a:hover::after { width: 100%; }
+.top-nav .nav-links a.nav-admin {
+  color: #4facfe;
+  border: 1px solid rgba(79,172,254,0.5);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 8px;
+  transition: all 0.3s;
+}
+.top-nav .nav-links a.nav-admin::after { display: none; }
+.top-nav .nav-links a.nav-admin:hover {
+  background: rgba(79,172,254,0.1);
+  color: #4facfe;
+}
 
 /* ========== Side Nav Dots ========== */
 .side-nav {
@@ -1264,6 +1278,7 @@ footer .footer-slogan {
     <li><a href="#works">WORKS</a></li>
     <li><a href="#articles">ARTICLES</a></li>
     <li><a href="#tools-contact">MORE</a></li>
+    <li><a href="/admin.html" class="nav-admin" target="_blank">管理</a></li>
   </ul>
 </nav>
 
