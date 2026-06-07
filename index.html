@@ -1536,7 +1536,7 @@ footer .footer-slogan {
     try {
       var tools = await fetchAPI('/api/tools');
       if (!tools || tools.length === 0) {
-        toolsEl.closest('section').style.display = 'none';
+        toolsEl.innerHTML = '<div style="color:rgba(26,26,46,0.35);font-size:13px;padding:20px;">暂无工具，请在管理后台添加</div>';
         return;
       }
       var top = tools.slice(0, 10);
@@ -1545,7 +1545,7 @@ footer .footer-slogan {
         return '<a class="tool-item" ' + linkAttrs + '><span class="tool-label">' + escHtml(t.name) + '</span></a>';
       }).join('');
     } catch(e) {
-      toolsEl.closest('section').style.display = 'none';
+      toolsEl.innerHTML = '<div style="color:rgba(26,26,46,0.35);font-size:13px;padding:20px;">加载失败</div>';
     }
   }
 
