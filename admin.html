@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yan's Portfolio - 管理后台</title>
+<style>
+/* ========== Reset ========== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { background: #f8f9fb; }
+body {
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+  background: #f8f9fb;
+  color: #1a1a2e;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== Login Page ========== */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+.login-box {
+  width: 100%;
+  max-width: 380px;
+  padding: 48px 36px;
+  text-align: center;
+}
+.login-logo {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+.login-logo span { color: #4facfe; }
+.login-subtitle {
+  font-size: 13px;
+  color: rgba(26,26,46,0.35);
+  margin-bottom: 36px;
+  letter-spacing: 1px;
+}
+.login-field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+.login-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(26,26,46,0.5);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.login-field input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+  background: #fff;
+}
+.login-field input:focus { border-color: #4facfe; }
+.login-btn {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+.login-btn:hover {
+  background: #2d2d4e;
+  transform: translateY(-1px);
+}
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.login-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 12px;
+  min-height: 20px;
+}
+
+/* ========== Admin Layout ========== */
+.admin-layout {
+  display: none;
+  min-height: 100vh;
+}
+.admin-layout.active { display: flex; }
+
+/* Sidebar */
+.admin-sidebar {
+  width: 240px;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 28px 0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: 0 24px 28px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-logo span { color: #4facfe; }
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.sidebar-nav a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sidebar-nav a.active {
+  background: rgba(79,172,254,0.15);
+  color: #4facfe;
+}
+.sidebar-nav a .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-footer a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.sidebar-footer a:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+
+/* Main Content */
+.admin-main {
+  flex: 1;
+  margin-left: 240px;
+  padding: 32px 40px;
+  min-height: 100vh;
+}
+
+/* Header */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.admin-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.admin-header h1 .accent { color: #4facfe; }
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.admin-header-right a {
+  font-size: 13px;
+  color: rgba(26,26,46,0.45);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.admin-header-right a:hover { color: #4facfe; }
+
+/* Content Panel */
+.admin-panel {
+  display: none;
+}
+.admin-panel.active { display: block; }
+
+/* Cards Grid */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.data-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 20px;
+  transition: all 0.3s;
+}
+.data-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.data-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.data-card-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.4;
+  flex: 1;
+}
+.data-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.data-card-actions button {
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.2s;
+  color: rgba(26,26,46,0.5);
+}
+.data-card-actions button:hover {
+  background: rgba(79,172,254,0.08);
+  border-color: rgba(79,172,254,0.3);
+  color: #4facfe;
+}
+.data-card-actions button.btn-delete:hover {
+  background: rgba(231,76,60,0.08);
+  border-color: rgba(231,76,60,0.3);
+  color: #e74c3c;
+}
+.data-card-meta {
+  font-size: 11px;
+  color: rgba(26,26,46,0.3);
+  font-family: 'SF Mono', 'Consolas', monospace;
+  letter-spacing: 0.5px;
+}
+.data-card-desc {
+  font-size: 13px;
+  color: rgba(26,26,46,0.45);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(26,26,46,0.25);
+}
+.empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Add Button */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-add:hover {
+  background: #2d2d4e;
+  transform: translateY(-1px);
+}
+
+/* ========== Modal ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.3px;
+}
+.modal-close {
+  float: right;
+  width: 32px; height: 32px;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  color: rgba(26,26,46,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(0,0,0,0.1); }
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(26,26,46,0.5);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+  font-family: inherit;
+}
+.form-group input:focus,
+.form-group textarea:focus { border-color: #4facfe; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: rgba(0,0,0,0.2); }
+.btn-submit {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-submit:hover { background: #2d2d4e; }
+
+/* ========== Contact Section ========== */
+.contact-form {
+  max-width: 520px;
+}
+.contact-item-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+.contact-item-row .ci-label {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 100px;
+}
+.contact-item-row .ci-value {
+  font-size: 13px;
+  color: rgba(26,26,46,0.5);
+  flex: 1;
+}
+.contact-item-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+}
+.contact-item-row input:focus { border-color: #4facfe; }
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 2000;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #27ae60; }
+.toast.error { background: #e74c3c; }
+
+/* ========== Password Change ========== */
+.password-section {
+  max-width: 420px;
+}
+.password-section .form-group { margin-bottom: 16px; }
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 100%;
+    position: relative;
+    padding: 16px 0;
+  }
+  .admin-layout.active { flex-direction: column; }
+  .admin-main { margin-left: 0; padding: 20px; }
+  .sidebar-nav { flex-direction: row; overflow-x: auto; padding: 8px 12px; }
+  .sidebar-footer { display: none; }
+  .data-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+/* Image preview in card */
+.data-card-thumb {
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #f0f2f5;
+}
+.data-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 18px 20px;
+}
+.stat-card .stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.stat-card .stat-label {
+  font-size: 12px;
+  color: rgba(26,26,46,0.35);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== Login Page ========== -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">YAN<span>.</span></div>
+    <p class="login-subtitle">MANAGEMENT CONSOLE</p>
+    <div class="login-field">
+      <label>账号</label>
+      <input type="text" id="loginUsername" placeholder="请输入管理员账号" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>密码</label>
+      <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">登 录</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ========== Admin Layout ========== -->
+<div class="admin-layout" id="adminLayout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">YAN<span>.</span> Admin</div>
+    <nav class="sidebar-nav">
+      <a class="active" data-panel="dashboard" onclick="switchPanel('dashboard', this)">
+        <span class="nav-icon">&#9632;</span> 概览
+      </a>
+      <a data-panel="works" onclick="switchPanel('works', this)">
+        <span class="nav-icon">&#9733;</span> 作品集
+      </a>
+      <a data-panel="articles" onclick="switchPanel('articles', this)">
+        <span class="nav-icon">&#9998;</span> 文章 / 笔记
+      </a>
+      <a data-panel="contact" onclick="switchPanel('contact', this)">
+        <span class="nav-icon">&#9993;</span> 联系方式
+      </a>
+      <a data-panel="password" onclick="switchPanel('password', this)">
+        <span class="nav-icon">&#9919;</span> 修改密码
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a onclick="doLogout()"><span class="nav-icon">&#10006;</span> 退出登录</a>
+      <a href="/" target="_blank"><span class="nav-icon">&#8599;</span> 查看主站</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+
+    <!-- Header -->
+    <div class="admin-header">
+      <h1 id="panelTitle">管理<span class="accent">概览</span></h1>
+      <div class="admin-header-right">
+        <a href="/" target="_blank">返回主站</a>
+      </div>
+    </div>
+
+    <!-- Dashboard Panel -->
+    <div class="admin-panel active" id="panel-dashboard">
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card"><div class="stat-num" id="statWorks">0</div><div class="stat-label">作品数</div></div>
+        <div class="stat-card"><div class="stat-num" id="statArticles">0</div><div class="stat-label">文章数</div></div>
+        <div class="stat-card"><div class="stat-num" id="statContact">4</div><div class="stat-label">联系渠道</div></div>
+        <div class="stat-card"><div class="stat-num">v2.0.0</div><div class="stat-label">当前版本</div></div>
+      </div>
+      <p style="color:rgba(26,26,46,0.35);font-size:13px;">通过左侧菜单管理你的作品集、文章和联系方式。</p>
+    </div>
+
+    <!-- Works Panel -->
+    <div class="admin-panel" id="panel-works">
+      <button class="btn-add" onclick="openWorkModal()">+ 新增作品</button>
+      <div class="data-grid" id="worksGrid" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Articles Panel -->
+    <div class="admin-panel" id="panel-articles">
+      <button class="btn-add" onclick="openArticleModal()">+ 新增文章</button>
+      <div class="data-grid" id="articlesGrid" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Contact Panel -->
+    <div class="admin-panel" id="panel-contact">
+      <div class="contact-form" id="contactForm"></div>
+      <div style="margin-top:20px;">
+        <button class="btn-submit" onclick="saveContact()">保存联系方式</button>
+      </div>
+    </div>
+
+    <!-- Password Panel -->
+    <div class="admin-panel" id="panel-password">
+      <div class="password-section">
+        <div class="form-group">
+          <label>当前密码</label>
+          <input type="password" id="oldPwd" placeholder="请输入当前密码">
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPwd" placeholder="至少 6 位">
+        </div>
+        <div class="form-group">
+          <label>确认新密码</label>
+          <input type="password" id="confirmPwd" placeholder="再次输入新密码">
+        </div>
+        <button class="btn-submit" onclick="changePassword()">修改密码</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========== Modal ========== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-title" id="modalTitle">新增</div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ========== Toast ========== -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== Scripts ========== -->
+<script>
+(function() {
+  const API = '';
+
+  // ── Helpers ──
+  function getToken() {
+    return localStorage.getItem('admin_token');
+  }
+
+  function setToken(t) {
+    localStorage.setItem('admin_token', t);
+  }
+
+  function clearToken() {
+    localStorage.removeItem('admin_token');
+  }
+
+  async function api(method, url, data) {
+    const opts = {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (getToken()) {
+      opts.headers['Authorization'] = 'Bearer ' + getToken();
+    }
+    if (data) opts.body = JSON.stringify(data);
+    const res = await fetch(API + url, opts);
+    return res.json();
+  }
+
+  function showToast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast ' + type + ' show';
+    setTimeout(() => { el.className = 'toast'; }, 2500);
+  }
+
+  // ── Login ──
+  window.doLogin = async function() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = '登录中...';
+    try {
+      const res = await api('POST', '/api/login', { username, password });
+      if (res.error) {
+        errEl.textContent = res.error;
+      } else {
+        setToken(res.token);
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminLayout').classList.add('active');
+        loadAll();
+      }
+    } catch(e) {
+      errEl.textContent = '网络错误，请确认服务已启动';
+    }
+    btn.disabled = false;
+    btn.textContent = '登 录';
+  };
+
+  // Enter key to login
+  document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.doLogin();
+  });
+  document.getElementById('loginUsername').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+  });
+
+  // ── Logout ──
+  window.doLogout = async function() {
+    try { await api('POST', '/api/logout'); } catch(e) {}
+    clearToken();
+    document.getElementById('adminLayout').classList.remove('active');
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').textContent = '';
+  };
+
+  // ── Panel Switch ──
+  window.switchPanel = function(name, el) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    const titles = { dashboard: '管理概览', works: '作品集管理', articles: '文章/笔记管理', contact: '联系方式管理', password: '修改密码' };
+    document.getElementById('panelTitle').innerHTML = titles[name] || name;
+  };
+
+  // ── Load All Data ──
+  async function loadAll() {
+    loadWorks();
+    loadArticles();
+    loadContact();
+    loadStats();
+  }
+
+  async function loadStats() {
+    try {
+      const [works, articles] = await Promise.all([
+        api('GET', '/api/works'),
+        api('GET', '/api/articles')
+      ]);
+      document.getElementById('statWorks').textContent = (works || []).length;
+      document.getElementById('statArticles').textContent = (articles || []).length;
+    } catch(e) {}
+  }
+
+  // ── Works CRUD ──
+  async function loadWorks() {
+    const grid = document.getElementById('worksGrid');
+    try {
+      const works = await api('GET', '/api/works');
+      if (!works || works.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#9733;</div><p>暂无作品，点击上方按钮新增</p></div>';
+        return;
+      }
+      grid.innerHTML = works.map(w => `
+        <div class="data-card">
+          ${w.image ? '<div class="data-card-thumb"><img src="' + escHtml(w.image) + '" alt=""></div>' : ''}
+          <div class="data-card-header">
+            <h3>${escHtml(w.title)}</h3>
+            <div class="data-card-actions">
+              <button class="btn-edit" onclick="editWork('${w.id}')" title="编辑">&#9998;</button>
+              <button class="btn-delete" onclick="deleteWork('${w.id}')" title="删除">&#10006;</button>
+            </div>
+          </div>
+          <div class="data-card-desc">${escHtml(w.description)}</div>
+          ${w.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(w.link) + '</div>' : ''}
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
+    }
+  }
+  window.loadWorks = loadWorks;
+
+  let editingWorkId = null;
+  window.openWorkModal = function(id) {
+    editingWorkId = id || null;
+    const title = id ? '编辑作品' : '新增作品';
+    let work = {};
+    if (id) {
+      // Find work data
+      const cards = document.querySelectorAll('#worksGrid .data-card');
+    }
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="form-group"><label>标题</label><input id="mWorkTitle" placeholder="作品标题"></div>
+      <div class="form-group"><label>描述</label><textarea id="mWorkDesc" placeholder="作品描述"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>图片 URL</label><input id="mWorkImg" placeholder="图片链接或路径"></div>
+        <div class="form-group"><label>链接</label><input id="mWorkLink" placeholder="作品链接（可选）"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-submit" onclick="saveWork()">保存</button>
+      </div>
+    `;
+    if (id) {
+      // Fetch fresh data
+      api('GET', '/api/works').then(works => {
+        const w = works.find(x => x.id === id);
+        if (w) {
+          document.getElementById('mWorkTitle').value = w.title || '';
+          document.getElementById('mWorkDesc').value = w.description || '';
+          document.getElementById('mWorkImg').value = w.image || '';
+          document.getElementById('mWorkLink').value = w.link || '';
+        }
+      });
+    }
+    document.getElementById('modalOverlay').classList.add('active');
+  };
+
+  window.editWork = function(id) { openWorkModal(id); };
+
+  window.saveWork = async function() {
+    const data = {
+      title: document.getElementById('mWorkTitle').value.trim(),
+      description: document.getElementById('mWorkDesc').value.trim(),
+      image: document.getElementById('mWorkImg').value.trim(),
+      link: document.getElementById('mWorkLink').value.trim()
+    };
+    if (!data.title) { showToast('请输入标题', 'error'); return; }
+    try {
+      if (editingWorkId) {
+        await api('PUT', '/api/works/' + editingWorkId, data);
+        showToast('作品已更新', 'success');
+      } else {
+        await api('POST', '/api/works', data);
+        showToast('作品已添加', 'success');
+      }
+      closeModal();
+      loadWorks();
+      loadStats();
+    } catch(e) {
+      showToast('保存失败', 'error');
+    }
+  };
+
+  window.deleteWork = async function(id) {
+    if (!confirm('确定删除这个作品吗？')) return;
+    try {
+      await api('DELETE', '/api/works/' + id);
+      showToast('已删除', 'success');
+      loadWorks();
+      loadStats();
+    } catch(e) {
+      showToast('删除失败', 'error');
+    }
+  };
+
+  // ── Articles CRUD ──
+  async function loadArticles() {
+    const grid = document.getElementById('articlesGrid');
+    try {
+      const articles = await api('GET', '/api/articles');
+      if (!articles || articles.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#9998;</div><p>暂无文章，点击上方按钮新增</p></div>';
+        return;
+      }
+      grid.innerHTML = articles.map(a => `
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3>${escHtml(a.icon || '')} ${escHtml(a.title)}</h3>
+            <div class="data-card-actions">
+              <button class="btn-edit" onclick="editArticle('${a.id}')" title="编辑">&#9998;</button>
+              <button class="btn-delete" onclick="deleteArticle('${a.id}')" title="删除">&#10006;</button>
+            </div>
+          </div>
+          <div class="data-card-meta">${escHtml(a.date || '')}</div>
+          <div class="data-card-desc">${escHtml(a.summary || '')}</div>
+          ${a.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(a.link) + '</div>' : ''}
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
+    }
+  }
+  window.loadArticles = loadArticles;
+
+  let editingArticleId = null;
+  window.openArticleModal = function(id) {
+    editingArticleId = id || null;
+    const title = id ? '编辑文章' : '新增文章';
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="form-group"><label>标题</label><input id="mArtTitle" placeholder="文章标题"></div>
+      <div class="form-row">
+        <div class="form-group"><label>日期</label><input id="mArtDate" placeholder="例如 2026.06"></div>
+        <div class="form-group"><label>图标</label><input id="mArtIcon" placeholder="例如 ✱" maxlength="2"></div>
+      </div>
+      <div class="form-group"><label>摘要</label><textarea id="mArtSummary" placeholder="文章摘要"></textarea></div>
+      <div class="form-group"><label>链接</label><input id="mArtLink" placeholder="文章链接（可选）"></div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-submit" onclick="saveArticle()">保存</button>
+      </div>
+    `;
+    if (id) {
+      api('GET', '/api/articles').then(articles => {
+        const a = articles.find(x => x.id === id);
+        if (a) {
+          document.getElementById('mArtTitle').value = a.title || '';
+          document.getElementById('mArtDate').value = a.date || '';
+          document.getElementById('mArtIcon').value = a.icon || '';
+          document.getElementById('mArtSummary').value = a.summary || '';
+          document.getElementById('mArtLink').value = a.link || '';
+        }
+      });
+    }
+    document.getElementById('modalOverlay').classList.add('active');
+  };
+
+  window.editArticle = function(id) { openArticleModal(id); };
+
+  window.saveArticle = async function() {
+    const data = {
+      title: document.getElementById('mArtTitle').value.trim(),
+      date: document.getElementById('mArtDate').value.trim(),
+      icon: document.getElementById('mArtIcon').value.trim(),
+      summary: document.getElementById('mArtSummary').value.trim(),
+      link: document.getElementById('mArtLink').value.trim()
+    };
+    if (!data.title) { showToast('请输入标题', 'error'); return; }
+    try {
+      if (editingArticleId) {
+        await api('PUT', '/api/articles/' + editingArticleId, data);
+        showToast('文章已更新', 'success');
+      } else {
+        await api('POST', '/api/articles', data);
+        showToast('文章已添加', 'success');
+      }
+      closeModal();
+      loadArticles();
+      loadStats();
+    } catch(e) {
+      showToast('保存失败', 'error');
+    }
+  };
+
+  window.deleteArticle = async function(id) {
+    if (!confirm('确定删除这篇文章吗？')) return;
+    try {
+      await api('DELETE', '/api/articles/' + id);
+      showToast('已删除', 'success');
+      loadArticles();
+      loadStats();
+    } catch(e) {
+      showToast('删除失败', 'error');
+    }
+  };
+
+  // ── Contact ──
+  let contactData = {};
+  async function loadContact() {
+    const form = document.getElementById('contactForm');
+    try {
+      contactData = await api('GET', '/api/contact');
+      const channels = contactData || {};
+      let html = '';
+      if (channels.wechat) {
+        html += `<div class="contact-item-row"><span class="ci-label">微信</span><input id="cWechatQr" value="${escHtml(channels.wechat.qr || '')}" placeholder="微信二维码图片路径"></div>`;
+      }
+      if (channels.xiaohongshu) {
+        html += `<div class="contact-item-row"><span class="ci-label">小红书</span><input id="cXhsQr" value="${escHtml(channels.xiaohongshu.qr || '')}" placeholder="小红书二维码图片路径"></div>`;
+      }
+      if (channels.wechat_official) {
+        html += `<div class="contact-item-row"><span class="ci-label">微信公众号</span><input id="cOfficialQr" value="${escHtml(channels.wechat_official.qr || '')}" placeholder="公众号二维码图片路径"></div>`;
+      }
+      if (channels.email) {
+        html += `<div class="contact-item-row"><span class="ci-label">邮箱</span><input id="cEmail" value="${escHtml(channels.email.value || '')}" placeholder="邮箱地址"></div>`;
+      }
+      form.innerHTML = html;
+    } catch(e) {
+      form.innerHTML = '<p style="color:rgba(26,26,46,0.35);">加载失败</p>';
+    }
+  }
+  window.loadContact = loadContact;
+
+  window.saveContact = async function() {
+    const data = { ...contactData };
+    if (data.wechat) data.wechat.qr = document.getElementById('cWechatQr')?.value || '';
+    if (data.xiaohongshu) data.xiaohongshu.qr = document.getElementById('cXhsQr')?.value || '';
+    if (data.wechat_official) data.wechat_official.qr = document.getElementById('cOfficialQr')?.value || '';
+    if (data.email) data.email.value = document.getElementById('cEmail')?.value || '';
+    try {
+      await api('PUT', '/api/contact', data);
+      contactData = data;
+      showToast('联系方式已保存', 'success');
+    } catch(e) {
+      showToast('保存失败', 'error');
+    }
+  };
+
+  // ── Change Password ──
+  window.changePassword = async function() {
+    const oldPwd = document.getElementById('oldPwd').value;
+    const newPwd = document.getElementById('newPwd').value;
+    const confirmPwd = document.getElementById('confirmPwd').value;
+    if (!oldPwd || !newPwd || !confirmPwd) { showToast('请填写所有字段', 'error'); return; }
+    if (newPwd !== confirmPwd) { showToast('两次密码不一致', 'error'); return; }
+    if (newPwd.length < 6) { showToast('新密码至少 6 位', 'error'); return; }
+    try {
+      const res = await api('POST', '/api/change-password', { oldPassword: oldPwd, newPassword: newPwd });
+      if (res.error) { showToast(res.error, 'error'); return; }
+      showToast('密码已修改', 'success');
+      document.getElementById('oldPwd').value = '';
+      document.getElementById('newPwd').value = '';
+      document.getElementById('confirmPwd').value = '';
+    } catch(e) {
+      showToast('修改失败', 'error');
+    }
+  };
+
+  // ── Modal ──
+  window.closeModal = function() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  };
+
+  // ── HTML Escape ──
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Auto-login check ──
+  if (getToken()) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminLayout').classList.add('active');
+    loadAll();
+  }
+})();
+</script>
+</body>
+</html>
