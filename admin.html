@@ -1208,32 +1208,13 @@ body {
   window.loadArticles = loadArticles;
 
   let editingArticleId = null;
-  let articleUploadedUrl = '';
   window.openArticleModal = function(id) {
     editingArticleId = id || null;
-    articleUploadedUrl = '';
     const title = id ? '编辑文章' : '新增文章';
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').innerHTML = `
       <div class="form-group"><label>标题</label><input id="mArtTitle" placeholder="文章标题"></div>
       <div class="form-group"><label>描述</label><textarea id="mArtSummary" placeholder="文章摘要/描述"></textarea></div>
-      <div class="form-group">
-        <label>封面图片</label>
-        <div class="upload-zone" id="articleUploadZone">
-          <input type="file" id="articleFileInput" accept="image/*" style="display:none;">
-          <div class="upload-icon">&#8679;</div>
-          <div class="upload-text">拖拽图片到此处，或 <strong>点击上传</strong></div>
-          <div class="upload-hint">支持 JPG、PNG、GIF、WebP（最大 10MB）</div>
-          <img class="upload-preview" id="articlePreview" alt="">
-          <button class="upload-remove" id="articleUploadRemove" onclick="removeArticleUpload(event)">&times;</button>
-          <div class="upload-loading"><div class="upload-spinner"></div></div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>或粘贴图片链接</label>
-        <input type="text" id="mArtImageUrl" placeholder="https://example.com/image.jpg（粘贴图片链接，可替代文件上传）" style="width:100%;padding:8px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:13px;">
-        <div style="font-size:11px;color:rgba(0,0,0,0.4);margin-top:4px;">推荐图床：imgbb.com（免费）｜ 粘贴后封面将使用此链接</div>
-      </div>
       <div class="form-row">
         <div class="form-group"><label>发布日期</label><input type="date" id="mArtDate"></div>
         <div class="form-group"><label>链接</label><input id="mArtLink" placeholder="文章链接（可选）"></div>
@@ -1244,37 +1225,14 @@ body {
       </div>
     `;
 
-    // Bind upload events
-    const zone = document.getElementById('articleUploadZone');
-    const fileInput = document.getElementById('articleFileInput');
-
-    zone.addEventListener('click', function(e) {
-      if (e.target.closest('.upload-remove')) return;
-      fileInput.click();
-    });
-    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
-    zone.addEventListener('drop', function(e) {
-      e.preventDefault(); zone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) handleArticleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', function() {
-      if (fileInput.files.length > 0) handleArticleFile(fileInput.files[0]);
-    });
-
     if (id) {
       api('GET', '/api/articles').then(articles => {
         const a = articles.find(x => x.id === id);
         if (a) {
           document.getElementById('mArtTitle').value = a.title || '';
           document.getElementById('mArtSummary').value = a.summary || '';
-          document.getElementById('mArtImageUrl').value = a.image || '';
           document.getElementById('mArtDate').value = (a.date || '').replace(/\./g, '-');
           document.getElementById('mArtLink').value = a.link || '';
-          if (a.image) {
-            articleUploadedUrl = a.image;
-            showArticlePreview(a.image);
-          }
         }
       });
     }
@@ -1284,11 +1242,9 @@ body {
   window.editArticle = function(id) { openArticleModal(id); };
 
   window.saveArticle = async function() {
-    const imgUrl = document.getElementById('mArtImageUrl').value.trim();
     const data = {
       title: document.getElementById('mArtTitle').value.trim(),
       summary: document.getElementById('mArtSummary').value.trim(),
-      image: articleUploadedUrl || imgUrl || '',
       date: (document.getElementById('mArtDate').value || '').replace(/-/g, '.'),
       link: document.getElementById('mArtLink').value.trim()
     };
@@ -1740,52 +1696,6 @@ body {
     }
   };
 
-  // ── Article Image Upload ──
-  function showArticlePreview(url) {
-    const zone = document.getElementById('articleUploadZone');
-    if (!zone) return;
-    const preview = document.getElementById('articlePreview');
-    if (!preview) return;
-    preview.src = url;
-    zone.classList.add('has-file');
-  }
-
-  async function handleArticleFile(file) {
-    const zone = document.getElementById('articleUploadZone');
-    if (!zone) return;
-    const ext = file.name.split('.').pop().toLowerCase();
-    const allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-    if (!allowed.includes(ext)) {
-      showToast('不支持的文件类型，仅支持图片', 'error');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('文件不能超过 10MB', 'error');
-      return;
-    }
-    zone.classList.add('uploading');
-    try {
-      const url = await uploadFile(file);
-      articleUploadedUrl = url;
-      showArticlePreview(url);
-    } catch(e) {
-      showToast('上传失败：' + (e.message || '未知错误'), 'error');
-    } finally {
-      zone.classList.remove('uploading');
-    }
-  }
-  window.handleArticleFile = handleArticleFile;
-
-  window.removeArticleUpload = function(e) {
-    e.stopPropagation();
-    articleUploadedUrl = '';
-    const zone = document.getElementById('articleUploadZone');
-    if (zone) {
-      zone.classList.remove('has-file');
-      const preview = document.getElementById('articlePreview');
-      if (preview) { preview.src = ''; preview.style.display = 'none'; }
-    }
-  };
 
   // ── HTML Escape ──
   function escHtml(s) {
