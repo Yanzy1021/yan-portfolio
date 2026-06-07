@@ -478,6 +478,164 @@ body {
 }
 .password-section .form-group { margin-bottom: 16px; }
 
+/* ========== Upload Zone ========== */
+.upload-zone {
+  border: 2px dashed rgba(0,0,0,0.12);
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #fafbfc;
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: #4facfe;
+  background: rgba(79,172,254,0.04);
+}
+.upload-zone.has-file {
+  border-style: solid;
+  border-color: rgba(0,0,0,0.08);
+  padding: 8px;
+  background: #fff;
+}
+.upload-zone .upload-icon {
+  font-size: 28px;
+  color: rgba(26,26,46,0.2);
+}
+.upload-zone .upload-text {
+  font-size: 13px;
+  color: rgba(26,26,46,0.35);
+}
+.upload-zone .upload-text strong {
+  color: #4facfe;
+}
+.upload-zone .upload-hint {
+  font-size: 11px;
+  color: rgba(26,26,46,0.2);
+}
+.upload-zone .upload-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  display: none;
+}
+.upload-zone.has-file .upload-preview {
+  display: block;
+}
+.upload-zone.has-file .upload-icon,
+.upload-zone.has-file .upload-text,
+.upload-zone.has-file .upload-hint {
+  display: none;
+}
+.upload-zone .upload-remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.upload-zone.has-file .upload-remove {
+  display: flex;
+}
+.upload-zone .upload-remove:hover {
+  background: rgba(231,76,60,0.8);
+}
+.upload-zone .upload-loading {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  z-index: 1;
+}
+.upload-zone.uploading .upload-loading {
+  display: flex;
+}
+.upload-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0,0,0,0.1);
+  border-top-color: #4facfe;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* QR Upload (smaller, inline) */
+.qr-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+.qr-upload-row .ci-label {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 100px;
+}
+.qr-upload-row .ci-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.qr-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: rgba(26,26,46,0.6);
+}
+.qr-upload-btn:hover {
+  border-color: #4facfe;
+  color: #4facfe;
+}
+.qr-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: none;
+}
+.qr-preview.show { display: block; }
+.qr-no-img {
+  font-size: 12px;
+  color: rgba(26,26,46,0.25);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .admin-sidebar {
@@ -784,20 +942,27 @@ body {
         grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#9733;</div><p>暂无作品，点击上方按钮新增</p></div>';
         return;
       }
-      grid.innerHTML = works.map(w => `
-        <div class="data-card">
-          ${w.image ? '<div class="data-card-thumb"><img src="' + escHtml(w.image) + '" alt=""></div>' : ''}
-          <div class="data-card-header">
-            <h3>${escHtml(w.title)}</h3>
-            <div class="data-card-actions">
-              <button class="btn-edit" onclick="editWork('${w.id}')" title="编辑">&#9998;</button>
-              <button class="btn-delete" onclick="deleteWork('${w.id}')" title="删除">&#10006;</button>
-            </div>
-          </div>
-          <div class="data-card-desc">${escHtml(w.description)}</div>
-          ${w.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(w.link) + '</div>' : ''}
-        </div>
-      `).join('');
+      grid.innerHTML = works.map(w => {
+        const isVideo = /\.(mp4|webm)$/i.test(w.image || '');
+        let thumb = '';
+        if (w.image) {
+          if (isVideo) {
+            thumb = '<div class="data-card-thumb"><video src="' + escHtml(w.image) + '" muted loop playsinline style="width:100%;height:100%;object-fit:cover;" onmouseenter="this.play()" onmouseleave="this.pause()"></video></div>';
+          } else {
+            thumb = '<div class="data-card-thumb"><img src="' + escHtml(w.image) + '" alt=""></div>';
+          }
+        }
+        return '<div class="data-card">' + thumb
+          + '<div class="data-card-header">'
+          + '<h3>' + escHtml(w.title) + '</h3>'
+          + '<div class="data-card-actions">'
+          + '<button class="btn-edit" onclick="editWork(\'' + w.id + '\')" title="编辑">&#9998;</button>'
+          + '<button class="btn-delete" onclick="deleteWork(\'' + w.id + '\')" title="删除">&#10006;</button>'
+          + '</div></div>'
+          + '<div class="data-card-desc">' + escHtml(w.description) + '</div>'
+          + (w.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(w.link) + '</div>' : '')
+          + '</div>';
+      }).join('');
     } catch(e) {
       grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
     }
@@ -805,36 +970,75 @@ body {
   window.loadWorks = loadWorks;
 
   let editingWorkId = null;
+  let workUploadedUrl = '';
   window.openWorkModal = function(id) {
     editingWorkId = id || null;
+    workUploadedUrl = '';
     const title = id ? '编辑作品' : '新增作品';
-    let work = {};
-    if (id) {
-      // Find work data
-      const cards = document.querySelectorAll('#worksGrid .data-card');
-    }
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').innerHTML = `
       <div class="form-group"><label>标题</label><input id="mWorkTitle" placeholder="作品标题"></div>
       <div class="form-group"><label>描述</label><textarea id="mWorkDesc" placeholder="作品描述"></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label>图片 URL</label><input id="mWorkImg" placeholder="图片链接或路径"></div>
-        <div class="form-group"><label>链接</label><input id="mWorkLink" placeholder="作品链接（可选）"></div>
+      <div class="form-group">
+        <label>封面图片 / 视频</label>
+        <div class="upload-zone" id="workUploadZone">
+          <input type="file" id="workFileInput" accept="image/*,video/*" style="display:none;">
+          <div class="upload-icon">&#8679;</div>
+          <div class="upload-text">拖拽文件到此处，或 <strong>点击上传</strong></div>
+          <div class="upload-hint">支持 JPG、PNG、GIF、WebP、MP4、WebM（最大 10MB）</div>
+          <img class="upload-preview" id="workPreview" alt="">
+          <video class="upload-preview" id="workVideoPreview" style="display:none;" muted loop playsinline></video>
+          <button class="upload-remove" id="workUploadRemove" onclick="removeWorkUpload(event)">&times;</button>
+          <div class="upload-loading"><div class="upload-spinner"></div></div>
+        </div>
       </div>
+      <div class="form-group"><label>链接</label><input id="mWorkLink" placeholder="作品链接（可选）"></div>
       <div class="form-actions">
         <button class="btn-cancel" onclick="closeModal()">取消</button>
         <button class="btn-submit" onclick="saveWork()">保存</button>
       </div>
     `;
+
+    // Bind upload events
+    const zone = document.getElementById('workUploadZone');
+    const fileInput = document.getElementById('workFileInput');
+
+    zone.addEventListener('click', function(e) {
+      if (e.target.closest('.upload-remove')) return;
+      fileInput.click();
+    });
+
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', function() {
+      zone.classList.remove('dragover');
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleWorkFile(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) {
+        handleWorkFile(fileInput.files[0]);
+      }
+    });
+
     if (id) {
-      // Fetch fresh data
       api('GET', '/api/works').then(works => {
         const w = works.find(x => x.id === id);
         if (w) {
           document.getElementById('mWorkTitle').value = w.title || '';
           document.getElementById('mWorkDesc').value = w.description || '';
-          document.getElementById('mWorkImg').value = w.image || '';
           document.getElementById('mWorkLink').value = w.link || '';
+          if (w.image) {
+            workUploadedUrl = w.image;
+            showWorkPreview(w.image);
+          }
         }
       });
     }
@@ -847,7 +1051,7 @@ body {
     const data = {
       title: document.getElementById('mWorkTitle').value.trim(),
       description: document.getElementById('mWorkDesc').value.trim(),
-      image: document.getElementById('mWorkImg').value.trim(),
+      image: workUploadedUrl || '',
       link: document.getElementById('mWorkLink').value.trim()
     };
     if (!data.title) { showToast('请输入标题', 'error'); return; }
@@ -989,16 +1193,30 @@ body {
       const channels = contactData || {};
       let html = '';
       if (channels.wechat) {
-        html += `<div class="contact-item-row"><span class="ci-label">微信</span><input id="cWechatQr" value="${escHtml(channels.wechat.qr || '')}" placeholder="微信二维码图片路径"></div>`;
+        html += '<div class="qr-upload-row"><span class="ci-label">微信</span><div class="ci-value">'
+          + '<button class="qr-upload-btn" onclick="uploadContactQR(\'wechat\')">&#8679; 上传二维码</button>'
+          + '<img class="qr-preview' + (channels.wechat.qr ? ' show' : '') + '" id="qrPreview-wechat" src="' + escHtml(channels.wechat.qr || '') + '" alt="">'
+          + (!channels.wechat.qr ? '<span class="qr-no-img">未上传</span>' : '')
+          + '</div></div>';
       }
       if (channels.xiaohongshu) {
-        html += `<div class="contact-item-row"><span class="ci-label">小红书</span><input id="cXhsQr" value="${escHtml(channels.xiaohongshu.qr || '')}" placeholder="小红书二维码图片路径"></div>`;
+        html += '<div class="qr-upload-row"><span class="ci-label">小红书</span><div class="ci-value">'
+          + '<button class="qr-upload-btn" onclick="uploadContactQR(\'xiaohongshu\')">&#8679; 上传二维码</button>'
+          + '<img class="qr-preview' + (channels.xiaohongshu.qr ? ' show' : '') + '" id="qrPreview-xiaohongshu" src="' + escHtml(channels.xiaohongshu.qr || '') + '" alt="">'
+          + (!channels.xiaohongshu.qr ? '<span class="qr-no-img">未上传</span>' : '')
+          + '</div></div>';
       }
       if (channels.wechat_official) {
-        html += `<div class="contact-item-row"><span class="ci-label">微信公众号</span><input id="cOfficialQr" value="${escHtml(channels.wechat_official.qr || '')}" placeholder="公众号二维码图片路径"></div>`;
+        html += '<div class="qr-upload-row"><span class="ci-label">微信公众号</span><div class="ci-value">'
+          + '<button class="qr-upload-btn" onclick="uploadContactQR(\'wechat_official\')">&#8679; 上传二维码</button>'
+          + '<img class="qr-preview' + (channels.wechat_official.qr ? ' show' : '') + '" id="qrPreview-wechat_official" src="' + escHtml(channels.wechat_official.qr || '') + '" alt="">'
+          + (!channels.wechat_official.qr ? '<span class="qr-no-img">未上传</span>' : '')
+          + '</div></div>';
       }
       if (channels.email) {
-        html += `<div class="contact-item-row"><span class="ci-label">邮箱</span><input id="cEmail" value="${escHtml(channels.email.value || '')}" placeholder="邮箱地址"></div>`;
+        html += '<div class="qr-upload-row"><span class="ci-label">邮箱</span><div class="ci-value">'
+          + '<input id="cEmail" value="' + escHtml(channels.email.value || '') + '" placeholder="邮箱地址" style="flex:1;padding:8px 12px;border:1.5px solid rgba(0,0,0,0.1);border-radius:6px;font-size:13px;outline:none;">'
+          + '</div></div>';
       }
       form.innerHTML = html;
     } catch(e) {
@@ -1007,12 +1225,46 @@ body {
   }
   window.loadContact = loadContact;
 
+  window.uploadContactQR = function(channel) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function() {
+      const file = input.files[0];
+      if (!file) return;
+      try {
+        showToast('上传中...', 'success');
+        const url = await uploadFile(file);
+        if (!contactData[channel]) contactData[channel] = {};
+        contactData[channel].qr = url;
+        // Update preview
+        const preview = document.getElementById('qrPreview-' + channel);
+        if (preview) {
+          preview.src = url;
+          preview.classList.add('show');
+        }
+        // Remove "未上传" text
+        const row = preview?.parentElement;
+        if (row) {
+          const noImg = row.querySelector('.qr-no-img');
+          if (noImg) noImg.remove();
+        }
+        // Auto-save
+        await api('PUT', '/api/contact', contactData);
+        showToast('二维码已上传并保存', 'success');
+      } catch(e) {
+        showToast('上传失败：' + (e.message || '未知错误'), 'error');
+      }
+    };
+    input.click();
+  };
+
   window.saveContact = async function() {
     const data = { ...contactData };
-    if (data.wechat) data.wechat.qr = document.getElementById('cWechatQr')?.value || '';
-    if (data.xiaohongshu) data.xiaohongshu.qr = document.getElementById('cXhsQr')?.value || '';
-    if (data.wechat_official) data.wechat_official.qr = document.getElementById('cOfficialQr')?.value || '';
-    if (data.email) data.email.value = document.getElementById('cEmail')?.value || '';
+    if (data.email) {
+      const emailInput = document.getElementById('cEmail');
+      if (emailInput) data.email.value = emailInput.value || '';
+    }
     try {
       await api('PUT', '/api/contact', data);
       contactData = data;
@@ -1045,6 +1297,78 @@ body {
   // ── Modal ──
   window.closeModal = function() {
     document.getElementById('modalOverlay').classList.remove('active');
+  };
+
+  // ── File Upload ──
+  async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = getToken();
+    const res = await fetch(API + '/api/upload', {
+      method: 'POST',
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+      body: formData
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json.url;
+  }
+
+  function showWorkPreview(url) {
+    const zone = document.getElementById('workUploadZone');
+    if (!zone) return;
+    const imgPreview = document.getElementById('workPreview');
+    const videoPreview = document.getElementById('workVideoPreview');
+    const isVideo = /\.(mp4|webm)$/i.test(url);
+    if (isVideo) {
+      imgPreview.style.display = 'none';
+      videoPreview.style.display = 'block';
+      videoPreview.src = url;
+    } else {
+      imgPreview.style.display = 'block';
+      videoPreview.style.display = 'none';
+      imgPreview.src = url;
+    }
+    zone.classList.add('has-file');
+  }
+
+  async function handleWorkFile(file) {
+    const zone = document.getElementById('workUploadZone');
+    if (!zone) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'mp4', 'webm'];
+    if (!allowed.includes(ext)) {
+      showToast('不支持的文件类型', 'error');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('文件不能超过 10MB', 'error');
+      return;
+    }
+    zone.classList.add('uploading');
+    try {
+      const url = await uploadFile(file);
+      workUploadedUrl = url;
+      showWorkPreview(url);
+    } catch(e) {
+      showToast('上传失败：' + (e.message || '未知错误'), 'error');
+    } finally {
+      zone.classList.remove('uploading');
+    }
+  }
+  window.handleWorkFile = handleWorkFile;
+
+  window.removeWorkUpload = function(e) {
+    e.stopPropagation();
+    workUploadedUrl = '';
+    const zone = document.getElementById('workUploadZone');
+    if (zone) {
+      zone.classList.remove('has-file');
+      const imgPreview = document.getElementById('workPreview');
+      const videoPreview = document.getElementById('workVideoPreview');
+      if (imgPreview) { imgPreview.src = ''; imgPreview.style.display = 'none'; }
+      if (videoPreview) { videoPreview.src = ''; videoPreview.style.display = 'none'; }
+    }
   };
 
   // ── HTML Escape ──
