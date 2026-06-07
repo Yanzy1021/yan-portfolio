@@ -16,6 +16,8 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -125,6 +127,89 @@ app.post('/api/change-password', authMiddleware, (req, res) => {
   writeJSON('admin.json', admin);
   res.json({ success: true });
 });
+
+// ========== Favicon Fetcher ==========
+function fetchFavicon(url) {
+  return new Promise((resolve) => {
+    if (!url) return resolve(null);
+    try {
+      let domain = '';
+      const parsed = new URL(url);
+      domain = parsed.hostname;
+      const proto = parsed.protocol === 'https:' ? https : http;
+
+      // Try multiple favicon paths
+      const candidates = [
+        '/favicon.ico',
+        '/apple-touch-icon.png',
+        '/apple-touch-icon-180x180.png',
+      ];
+
+      let tried = 0;
+      function tryNext() {
+        if (tried >= candidates.length) return resolve(null);
+        const faviconUrl = candidates[tried];
+        tried++;
+
+        const req = proto.get({
+          hostname: domain,
+          port: proto === https ? 443 : 80,
+          path: faviconUrl,
+          timeout: 5000,
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; FaviconBot)' }
+        }, (res) => {
+          if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            // Follow redirect
+            try {
+              const redirectUrl = new URL(res.headers.location, url);
+              if (redirectUrl.protocol === 'https:') {
+                https.get(redirectUrl.href, { timeout: 5000, headers: { 'User-Agent': 'Mozilla/5.0' } }, (r2) => {
+                  if (r2.statusCode === 200 && parseInt(r2.headers['content-length'] || '0') > 0) {
+                    saveFavicon(r2, domain).then(resolve);
+                  } else { tryNext(); }
+                }).on('error', () => tryNext());
+              } else {
+                http.get(redirectUrl.href, { timeout: 5000, headers: { 'User-Agent': 'Mozilla/5.0' } }, (r2) => {
+                  if (r2.statusCode === 200 && parseInt(r2.headers['content-length'] || '0') > 0) {
+                    saveFavicon(r2, domain).then(resolve);
+                  } else { tryNext(); }
+                }).on('error', () => tryNext());
+              }
+            } catch(e) { tryNext(); }
+            return;
+          }
+          if (res.statusCode !== 200) { res.destroy(); tryNext(); return; }
+          const cl = parseInt(res.headers['content-length'] || '0');
+          const ct = res.headers['content-type'] || '';
+          if (cl === 0 || (!ct.includes('image') && !faviconUrl.endsWith('.ico'))) {
+            res.destroy(); tryNext(); return;
+          }
+          saveFavicon(res, domain).then(resolve);
+        });
+        req.on('error', () => tryNext());
+        req.on('timeout', () => { req.destroy(); tryNext(); });
+      }
+      tryNext();
+    } catch(e) { resolve(null); }
+  });
+}
+
+function saveFavicon(stream, domain) {
+  return new Promise((resolve) => {
+    try {
+      const safeDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filename = 'favicon-' + safeDomain + '-' + Date.now() + '.ico';
+      const filepath = path.join(__dirname, 'uploads', filename);
+      const ws = fs.createWriteStream(filepath);
+      stream.pipe(ws);
+      ws.on('finish', () => {
+        resolve('/uploads/' + filename);
+      });
+      ws.on('error', () => { resolve(null); });
+      stream.on('error', () => { ws.destroy(); resolve(null); });
+    } catch(e) { resolve(null); }
+  });
+}
 
 // ========== Pagination Helper ==========
 function paginate(data, page = 1, limit = 12) {
@@ -265,7 +350,7 @@ app.get('/api/tools', (req, res) => {
 });
 
 // POST /api/tools - 新增工具（需登录）
-app.post('/api/tools', authMiddleware, (req, res) => {
+app.post('/api/tools', authMiddleware, async (req, res) => {
   const tools = readJSON('tools.json') || [];
   const tool = {
     id: Date.now().toString(),
@@ -276,17 +361,32 @@ app.post('/api/tools', authMiddleware, (req, res) => {
     link: req.body.link || '',
     createdAt: new Date().toISOString()
   };
+  // Auto-fetch favicon if no icon but has link
+  if (!tool.icon && tool.link) {
+    try {
+      const faviconUrl = await fetchFavicon(tool.link);
+      if (faviconUrl) tool.icon = faviconUrl;
+    } catch(e) {}
+  }
   tools.push(tool);
   writeJSON('tools.json', tools);
   res.json(tool);
 });
 
 // PUT /api/tools/:id - 编辑工具（需登录）
-app.put('/api/tools/:id', authMiddleware, (req, res) => {
+app.put('/api/tools/:id', authMiddleware, async (req, res) => {
   const tools = readJSON('tools.json') || [];
   const idx = tools.findIndex(t => t.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: '工具不存在' });
-  tools[idx] = { ...tools[idx], ...req.body, id: tools[idx].id, updatedAt: new Date().toISOString() };
+  const updated = { ...tools[idx], ...req.body, id: tools[idx].id, updatedAt: new Date().toISOString() };
+  // Auto-fetch favicon if icon was cleared but link exists
+  if (!updated.icon && updated.link) {
+    try {
+      const faviconUrl = await fetchFavicon(updated.link);
+      if (faviconUrl) updated.icon = faviconUrl;
+    } catch(e) {}
+  }
+  tools[idx] = updated;
   writeJSON('tools.json', tools);
   res.json(tools[idx]);
 });

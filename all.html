@@ -86,11 +86,166 @@ nav {
   gap: 24px;
   margin-bottom: 40px;
 }
+/* Tools: 3-column layout */
+.content-grid.tools-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width:900px) {
+  .content-grid.tools-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width:600px) {
+  .content-grid.tools-grid { grid-template-columns: 1fr; }
+}
 @media (max-width:768px) {
   .content-grid { grid-template-columns: 1fr; }
 }
 
-/* ========== Work/Article/Tool Card ========== */
+/* ========== Timeline (Articles) ========== */
+.timeline-list {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative;
+  margin-bottom: 40px;
+}
+.timeline-item {
+  display: flex; gap: 0; position: relative;
+  padding-bottom: 36px;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+/* 时间轴竖线 */
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 119px;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(79,172,254,0.25), rgba(79,172,254,0.08));
+  z-index: 0;
+}
+.timeline-item:last-child::before { bottom: 50%; }
+/* 圆点 */
+.timeline-dot {
+  position: absolute;
+  left: 113px;
+  top: 6px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2.5px solid #4facfe;
+  z-index: 1;
+  transition: all 0.3s;
+}
+.timeline-item:hover .timeline-dot {
+  background: #4facfe;
+  box-shadow: 0 0 0 4px rgba(79,172,254,0.15);
+}
+/* 日期列 */
+.timeline-date {
+  width: 100px; min-width: 100px;
+  text-align: right;
+  padding-right: 36px;
+  padding-top: 2px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: rgba(26,26,46,0.3);
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+}
+/* 内容卡片 */
+.timeline-content {
+  flex: 1; min-width: 0;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  padding: 20px 24px;
+  transition: all 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  cursor: pointer;
+  text-decoration: none; color: inherit; display: block;
+}
+.timeline-content:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  border-color: rgba(79,172,254,0.2);
+}
+.timeline-content h3 {
+  font-size: 16px; font-weight: 700; color: #1a1a2e;
+  line-height: 1.4; margin-bottom: 8px;
+}
+.timeline-content .item-desc {
+  font-size: 13px; color: rgba(26,26,46,0.4); line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.timeline-content .item-thumb {
+  width: 100%; height: 140px; border-radius: 10px;
+  overflow: hidden; margin-bottom: 14px; background: #f0f2f5;
+}
+.timeline-content .item-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+@media (max-width:768px) {
+  .timeline-item::before { left: 15px; }
+  .timeline-dot { left: 9px; }
+  .timeline-date { display: none; }
+  .timeline-item { padding-left: 36px; }
+}
+
+/* ========== Filter Bar (Tools) ========== */
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 28px;
+}
+.filter-btn {
+  padding: 6px 16px; border-radius: 20px;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  background: #fff; color: rgba(26,26,46,0.5);
+  font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px;
+  cursor: pointer; transition: all 0.25s;
+}
+.filter-btn:hover { border-color: rgba(79,172,254,0.3); color: #4facfe; }
+.filter-btn.active {
+  background: #1a1a2e; color: #fff;
+  border-color: #1a1a2e;
+}
+
+/* ========== Tool Card (icon + name) ========== */
+.tool-card-simple {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 28px 16px 24px;
+  transition: all 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  cursor: pointer;
+  text-decoration: none; color: inherit;
+}
+.tool-card-simple:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.07);
+  border-color: rgba(79,172,254,0.25);
+}
+.tool-card-simple .tool-icon-wrap {
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8f9fb, #f0f2f5);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.tool-card-simple .tool-icon-wrap img {
+  width: 36px; height: 36px; object-fit: contain;
+}
+.tool-card-simple .tool-icon-placeholder {
+  font-size: 28px; line-height: 1;
+}
+.tool-card-simple .tool-name {
+  font-size: 13px; font-weight: 600; color: #1a1a2e;
+  text-align: center; line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ========== Work/Article Card (grid) ========== */
 .item-card {
   background: #fff;
   border-radius: 16px;
@@ -129,25 +284,6 @@ nav {
   font-size: 11px; color:rgba(26,26,46,0.25);
   font-family:'SF Mono','Consolas',monospace; letter-spacing:0.5px;
   margin-top: 10px;
-}
-.item-card-body .item-category {
-  display: inline-block;
-  padding: 3px 10px; border-radius: 20px;
-  background: rgba(79,172,254,0.1); color: #4facfe;
-  font-size: 11px; font-weight: 600; letter-spacing:0.5px;
-  margin-bottom: 8px;
-}
-
-/* Tool card specific */
-.tool-card .item-card-thumb {
-  height: 120px; display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg, #f8f9fb, #f0f2f5);
-}
-.tool-card .tool-icon {
-  font-size: 40px; width:64px; height:64px;
-  display:flex; align-items:center; justify-content:center;
-  background:#fff; border-radius:16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
 /* ========== Pagination ========== */
@@ -224,7 +360,9 @@ nav {
   <!-- Main Content -->
   <main class="main-content">
     <h1 class="tab-header"><span class="accent" id="tabTitle">全部作品</span></h1>
+    <div class="filter-bar" id="filterBar" style="display:none;"></div>
     <div class="content-grid" id="contentGrid"></div>
+    <div class="timeline-list" id="timelineList" style="display:none;"></div>
     <div class="pagination" id="pagination"></div>
     <div class="empty-state" id="emptyState" style="display:none;"></div>
     <div class="loading-state" id="loadingState" style="display:none;">加载中…</div>
@@ -235,9 +373,21 @@ nav {
 <script>
 (function(){
   const PAGE_LIMIT = 12;
+
+  // ── Protocol check ──
+  if (location.protocol === 'file:') {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('emptyState').innerHTML = '<div class="empty-icon">⚠</div><p>请通过 http://localhost:3000/all.html 访问，不要直接双击打开文件</p>';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
   let currentTab = 'works';
   let currentPage = 1;
   let totalPages = 1;
+
+  // Tools: load all at once for client-side filtering
+  let allTools = [];
+  let currentToolCategory = 'all';
 
   const tabTitles = { works:'全部作品', articles:'全部文章', tools:'常用工具' };
 
@@ -246,7 +396,6 @@ nav {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab') || 'works';
     currentTab = tab;
-    // Update sidebar active state
     document.querySelectorAll('.sidebar-nav a').forEach(a => {
       a.classList.toggle('active', a.dataset.tab === tab);
     });
@@ -259,10 +408,10 @@ nav {
     if (tab === currentTab) return;
     currentTab = tab;
     currentPage = 1;
+    currentToolCategory = 'all';
     document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
     if (el) el.classList.add('active');
     document.getElementById('tabTitle').textContent = tabTitles[tab] || tab;
-    // Update URL without reload
     history.pushState(null, '', '?tab=' + tab);
     loadTab(tab, 1);
   };
@@ -270,14 +419,34 @@ nav {
   // ── Load Tab Data ──
   async function loadTab(tab, page) {
     const grid = document.getElementById('contentGrid');
+    const timeline = document.getElementById('timelineList');
+    const filterBar = document.getElementById('filterBar');
     const emptyEl = document.getElementById('emptyState');
     const loadingEl = document.getElementById('loadingState');
-    grid.innerHTML = '';
+    const pag = document.getElementById('pagination');
+
+    // Reset display
+    grid.style.display = 'none';
+    timeline.style.display = 'none';
+    filterBar.style.display = 'none';
     emptyEl.style.display = 'none';
+    pag.innerHTML = '';
     loadingEl.style.display = 'block';
-    document.getElementById('pagination').innerHTML = '';
 
     try {
+      if (tab === 'tools') {
+        // Tools: load all at once
+        if (allTools.length === 0) {
+          const res = await fetch('/api/tools?limit=9999');
+          const data = await res.json();
+          allTools = data.items || data || [];
+        }
+        loadingEl.style.display = 'none';
+        renderTools();
+        return;
+      }
+
+      // Works / Articles: paginated
       const res = await fetch('/api/' + tab + '?page=' + page + '&limit=' + PAGE_LIMIT);
       const data = await res.json();
       loadingEl.style.display = 'none';
@@ -291,22 +460,67 @@ nav {
         return;
       }
 
-      grid.innerHTML = items.map(item => renderItem(tab, item)).join('');
-      renderPagination(tab, currentPage, totalPages);
+      if (tab === 'articles') {
+        // Articles: timeline
+        grid.style.display = 'none';
+        timeline.style.display = '';
+        timeline.innerHTML = items.map(a => renderArticleTimeline(a)).join('');
+        renderPagination(tab, currentPage, totalPages);
+      } else {
+        // Works: grid
+        timeline.style.display = 'none';
+        grid.style.display = '';
+        grid.className = 'content-grid';
+        grid.innerHTML = items.map(w => renderWork(w)).join('');
+        renderPagination(tab, currentPage, totalPages);
+      }
     } catch(e) {
       loadingEl.style.display = 'none';
-      grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
+      emptyEl.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
+      emptyEl.style.display = 'block';
     }
   }
 
-  // ── Render Item ──
-  function renderItem(tab, item) {
-    if (tab === 'works') return renderWork(item);
-    if (tab === 'articles') return renderArticle(item);
-    if (tab === 'tools') return renderTool(item);
-    return '';
+  // ── Tools: render with filter ──
+  function renderTools() {
+    const grid = document.getElementById('contentGrid');
+    const timeline = document.getElementById('timelineList');
+    const filterBar = document.getElementById('filterBar');
+    timeline.style.display = 'none';
+    grid.style.display = '';
+    grid.className = 'content-grid tools-grid';
+    document.getElementById('pagination').innerHTML = '';
+
+    const filtered = currentToolCategory === 'all'
+      ? allTools
+      : allTools.filter(t => t.category === currentToolCategory);
+
+    if (filtered.length === 0) {
+      showEmpty('tools');
+      return;
+    }
+    buildFilterBar(filterBar);
+    grid.innerHTML = filtered.map(t => renderToolCard(t)).join('');
   }
 
+  function buildFilterBar(bar) {
+    const categories = [...new Set(allTools.map(t => t.category).filter(Boolean))];
+    if (categories.length === 0) { bar.style.display = 'none'; return; }
+    let html = '<button class="filter-btn ' + (currentToolCategory==='all'?'active':'') + '" onclick="filterByCategory(\'all\')">全部</button>';
+    categories.forEach(cat => {
+      const escCat = cat.replace(/'/g, "\\'");
+      html += '<button class="filter-btn ' + (currentToolCategory===cat?'active':'') + '" onclick="filterByCategory(\'' + escCat + '\')">' + esc(cat) + '</button>';
+    });
+    bar.innerHTML = html;
+    bar.style.display = '';
+  }
+
+  window.filterByCategory = function(cat) {
+    currentToolCategory = cat;
+    renderTools();
+  };
+
+  // ── Render: Work (grid card) ──
   function renderWork(w) {
     const isVideo = /\.(mp4|webm)$/i.test(w.image || '');
     let thumb = '';
@@ -326,36 +540,40 @@ nav {
       + '</div></a>';
   }
 
-  function renderArticle(a) {
+  // ── Render: Article (timeline item) ──
+  function renderArticleTimeline(a) {
+    const dateStr = a.date || '';
     let thumb = '';
     if (a.image) {
-      thumb = '<div class="item-card-thumb"><img src="' + esc(a.image) + '" alt="" loading="lazy"></div>';
+      thumb = '<div class="item-thumb"><img src="' + esc(a.image) + '" alt="" loading="lazy"></div>';
     }
     const linkAttrs = a.link ? (' href="' + esc(a.link) + '" target="_blank" rel="noopener"') : '';
-    return '<a class="item-card" ' + linkAttrs + '>'
+    return '<div class="timeline-item">'
+      + '<div class="timeline-date">' + esc(dateStr) + '</div>'
+      + '<div class="timeline-dot"></div>'
+      + '<div class="timeline-content" ' + linkAttrs + '>'
       + thumb
-      + '<div class="item-card-body">'
-      + (a.date ? '<div class="item-meta">' + esc(a.date) + '</div>' : '')
       + '<h3>' + esc(a.title) + '</h3>'
       + '<div class="item-desc">' + esc(a.summary || '') + '</div>'
-      + '</div></a>';
+      + '</div>'
+      + '</div>';
   }
 
-  function renderTool(t) {
-    let thumb = '';
+  // ── Render: Tool (simple card: icon + name) ──
+  function renderToolCard(t) {
+    let iconHtml = '';
     if (t.icon) {
-      thumb = '<div class="item-card-thumb"><div class="tool-icon"><img src="' + esc(t.icon) + '" alt="" style="width:40px;height:40px;object-fit:contain;border-radius:8px;"></div></div>';
+      iconHtml = '<div class="tool-icon-wrap"><img src="' + esc(t.icon) + '" alt=""></div>';
     } else {
-      thumb = '<div class="item-card-thumb"><div class="tool-icon">⚙</div></div>';
+      iconHtml = '<div class="tool-icon-wrap"><span class="tool-icon-placeholder">⚙</span></div>';
     }
     const linkAttrs = t.link ? (' href="' + esc(t.link) + '" target="_blank" rel="noopener"') : '';
-    return '<a class="item-card tool-card" ' + linkAttrs + '>'
-      + thumb
-      + '<div class="item-card-body">'
-      + (t.category ? '<span class="item-category">' + esc(t.category) + '</span>' : '')
-      + '<h3>' + esc(t.name) + '</h3>'
-      + '<div class="item-desc">' + esc(t.description || '') + '</div>'
-      + '</div></a>';
+    return '<a class="tool-card-simple" ' + linkAttrs + '>'
+      + iconHtml
+      + '<span class="tool-name">' + esc(t.name) + '</span>'
+      + '</a>';
+      + '</div>'
+      + '</a>';
   }
 
   // ── Empty State ──
