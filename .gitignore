@@ -1,0 +1,6 @@
+# 忽略规则
+node_modules/
+data/
+backups/
+*.log
+.env
