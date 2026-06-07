@@ -1,6 +1,12 @@
-# 忽略规则
 node_modules/
-data/
-backups/
-*.log
+uploads/
+data/admin.json
+.workbuddy/
 .env
+.env.local
+.vercel/
+backups/
+__check.js
+nul
+%TEMP%token.json
+"PERSONAL PORTFOLIO/"

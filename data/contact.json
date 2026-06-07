@@ -1,0 +1,18 @@
+{
+  "wechat": {
+    "label": "微信",
+    "qr": "wechat-qr.png"
+  },
+  "xiaohongshu": {
+    "label": "小红书",
+    "qr": "xhs-qr.png"
+  },
+  "wechat_official": {
+    "label": "微信公众号",
+    "qr": ""
+  },
+  "email": {
+    "label": "邮箱",
+    "value": "479102834@qq.com"
+  }
+}

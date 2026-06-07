@@ -401,6 +401,22 @@ app.delete('/api/tools/:id', authMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
+// ========== Avatar (Digital Clone) API ==========
+
+// GET /api/avatar - 获取数字分身配置（公开）
+app.get('/api/avatar', (req, res) => {
+  const avatar = readJSON('avatar.json');
+  res.json(avatar || {});
+});
+
+// PUT /api/avatar - 更新数字分身配置（需登录）
+app.put('/api/avatar', authMiddleware, (req, res) => {
+  const avatar = readJSON('avatar.json') || {};
+  const updated = { ...avatar, ...req.body };
+  writeJSON('avatar.json', updated);
+  res.json(updated);
+});
+
 // ========== Contact API ==========
 
 // GET /api/contact - 获取联系方式（公开）

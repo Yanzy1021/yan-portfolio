@@ -9,7 +9,6 @@
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
   background: #ffffff;
   overflow-x: hidden;
 }
@@ -45,8 +44,8 @@ body {
   pointer-events: none;
 }
 
-/* ========== Navigation ========== */
-nav {
+/* ========== Navigation (Top Bar) ========== */
+.top-nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
@@ -60,7 +59,7 @@ nav {
   border-bottom: 1px solid rgba(0,0,0,0.05);
   transition: background 0.3s ease;
 }
-.nav-logo {
+.top-nav .nav-logo {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 3px;
@@ -77,12 +76,12 @@ nav {
   color: #4facfe;
   margin-right: 2px;
 }
-.nav-links {
+.top-nav .nav-links {
   display: flex;
   gap: 36px;
   list-style: none;
 }
-.nav-links a {
+.top-nav .nav-links a {
   font-size: 13px;
   font-weight: 500;
   color: rgba(26,26,46,0.45);
@@ -91,7 +90,7 @@ nav {
   transition: color 0.3s;
   position: relative;
 }
-.nav-links a::after {
+.top-nav .nav-links a::after {
   content: '';
   position: absolute;
   bottom: -4px; left: 0;
@@ -100,8 +99,65 @@ nav {
   transition: width 0.3s ease;
   border-radius: 1px;
 }
-.nav-links a:hover { color: #1a1a2e; }
-.nav-links a:hover::after { width: 100%; }
+.top-nav .nav-links a:hover { color: #1a1a2e; }
+.top-nav .nav-links a:hover::after { width: 100%; }
+
+/* ========== Side Nav Dots ========== */
+.side-nav {
+  position: fixed;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.side-nav-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(26,26,46,0.15);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.35s;
+  position: relative;
+}
+.side-nav-dot:hover {
+  background: rgba(26,26,46,0.35);
+  transform: scale(1.3);
+}
+.side-nav-dot.active {
+  background: #4facfe;
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px rgba(79,172,254,0.15);
+}
+.side-nav-dot .dot-label {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(26,26,46,0.5);
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.side-nav-dot:hover .dot-label {
+  opacity: 1;
+}
+@media (max-width: 768px) {
+  .side-nav { left: 12px; gap: 14px; }
+  .side-nav-dot { width: 8px; height: 8px; }
+  .side-nav-dot .dot-label { display: none; }
+}
 
 /* ========== Back to Top ========== */
 .back-to-top {
@@ -143,14 +199,9 @@ nav {
 
 /* ========== Section Base ========== */
 section {
-  min-height: 100vh;
-  scroll-snap-align: start;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   z-index: 1;
-  padding: 60px 50px;
+  padding: 40px 50px;
 }
 .section-inner {
   max-width: 1280px;
@@ -185,8 +236,11 @@ section {
 
 /* ========== HERO ========== */
 #hero {
-  padding-top: 100px;
+  padding-top: 80px;
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .hero-grid {
   display: grid;
@@ -407,6 +461,7 @@ section {
   padding: 16px 20px;
   background: linear-gradient(135deg, #f0f7ff, #e8f4fd);
   border-bottom: 1px solid rgba(0,0,0,0.05);
+  position: relative;
 }
 .chat-panel-avatar {
   width: 40px;
@@ -458,11 +513,56 @@ section {
   align-self: flex-end;
   border-radius: 16px 16px 4px 16px;
 }
+.chat-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.chat-quick-reply-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(79,172,254,0.3);
+  border-radius: 16px;
+  background: rgba(79,172,254,0.06);
+  color: #4facfe;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.chat-quick-reply-btn:hover {
+  background: rgba(79,172,254,0.15);
+  border-color: rgba(79,172,254,0.5);
+}
 .chat-panel-input {
   display: flex;
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.chat-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(0,0,0,0.04);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: rgba(26,26,46,0.35);
+  transition: all 0.2s;
+  line-height: 1;
+}
+.chat-close-btn:hover {
+  background: rgba(255,100,100,0.12);
+  color: #ff6b6b;
 }
 .chat-panel-input input {
   flex: 1;
@@ -553,7 +653,6 @@ section {
 
 /* ========== WORKS — Carousel (fixed) ========== */
 #works {
-  padding: 80px 50px;
 }
 
 .works-header {
@@ -719,8 +818,8 @@ section {
 
 /* ========== ARTICLES ========== */
 #articles {
-  padding: 80px 50px;
 }
+
 .articles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -792,25 +891,39 @@ section {
   margin-top: auto;
 }
 
-/* ========== CONTACT (fixed) ========== */
-#contact {
-  padding: 80px 50px 100px;
+/* ========== TOOLS & CONTACT (combined) ========== */
+.tools-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+}
+.tools-contact-grid .tools-col,
+.tools-contact-grid .contact-col {
+  text-align: center;
+}
+@media (max-width: 1024px) {
+  .tools-contact-grid { gap: 40px; }
+}
+@media (max-width: 768px) {
+  .tools-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }
 .contact-grid {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: flex-start;
-  gap: 32px;
+  gap: 24px;
   flex-wrap: wrap;
-  max-width: 900px;
-  margin: 0 auto;
 }
 .tools-showcase {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  max-width: 900px;
-  margin: 0 auto;
 }
 .tools-showcase .tool-item {
   display: flex;
@@ -973,10 +1086,17 @@ section {
   font-family: 'SF Mono','Menlo','Consolas',monospace;
 }
 
+/* ========== Section Spacing ========== */
+/* 非首屏 section 上下 margin，制造区域间呼吸感 */
+section:not(#hero) {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
 /* ========== FOOTER ========== */
 footer {
   text-align: center;
-  padding: 40px 50px 52px;
+  padding: 40px 50px 10px;
   border-top: 1px solid rgba(0,0,0,0.05);
   position: relative;
   z-index: 1;
@@ -1027,14 +1147,21 @@ footer .footer-slogan {
                box-shadow 0.4s cubic-bezier(0.22,0.61,0.36,1);
   will-change: opacity, transform;
 }
-.anim-section.visible .article-card:nth-child(1) { opacity:1; transform:translate3d(0,0,0); transition-delay: 0.05s; }
-.anim-section.visible .article-card:nth-child(2) { opacity:1; transform:translate3d(0,0,0); transition-delay: 0.12s; }
-.anim-section.visible .article-card:nth-child(3) { opacity:1; transform:translate3d(0,0,0); transition-delay: 0.19s; }
+.anim-section.visible .article-card {
+  opacity: 1;
+  transform: translate3d(0,0,0);
+}
+.anim-section.visible .article-card:nth-child(1) { transition-delay: 0.05s; }
+.anim-section.visible .article-card:nth-child(2) { transition-delay: 0.12s; }
+.anim-section.visible .article-card:nth-child(3) { transition-delay: 0.19s; }
+.anim-section.visible .article-card:nth-child(4) { transition-delay: 0.26s; }
+.anim-section.visible .article-card:nth-child(5) { transition-delay: 0.33s; }
+.anim-section.visible .article-card:nth-child(6) { transition-delay: 0.40s; }
 
 /* ========== FOOTER ========== */
 .site-footer {
   text-align: center;
-  padding: 32px 24px 28px;
+  padding: 0 24px 28px;
   font-size: 12.5px;
   color: rgba(26,26,46,0.35);
   letter-spacing: 0.5px;
@@ -1047,8 +1174,8 @@ footer .footer-slogan {
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
-  nav { padding: 16px 32px; }
-  section { padding: 50px 32px; }
+  .top-nav { padding: 16px 32px; }
+  section { padding: 32px 28px; }
   .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
   .hero-slogan { margin: 0 auto; max-width: 100%; }
   .hero-actions { justify-content: center; }
@@ -1063,9 +1190,9 @@ footer .footer-slogan {
   .contact-grid { gap: 32px; }
 }
 @media (max-width: 768px) {
-  nav { padding: 14px 20px; }
-  .nav-links { gap: 20px; }
-  section { padding: 40px 20px; }
+  .top-nav { padding: 14px 20px; }
+  .top-nav .nav-links { gap: 20px; }
+  section { padding: 28px 16px; }
   .hero-name { font-size: 48px; letter-spacing: -2px; }
   .hero-slogan { font-size: 19px; }
   .avatar-img-wrap { width: 180px; height: 180px; }
@@ -1080,10 +1207,10 @@ footer .footer-slogan {
   .back-to-top { right: 20px; bottom: 24px; }
 }
 @media (max-width: 480px) {
-  nav { padding: 12px 14px; }
-  .nav-links { gap: 14px; }
-  .nav-links a { font-size: 11px; }
-  section { padding: 32px 14px; }
+  .top-nav { padding: 12px 14px; }
+  .top-nav .nav-links { gap: 14px; }
+  .top-nav .nav-links a { font-size: 11px; }
+  section { padding: 24px 12px; }
   .hero-name { font-size: 38px; letter-spacing: -1px; }
   .hero-slogan { font-size: 16px; }
   .avatar-img-wrap { width: 150px; height: 150px; }
@@ -1101,12 +1228,12 @@ footer .footer-slogan {
 }
 /* ========== WIDE SCREEN (≥1440px) ========== */
 @media (min-width: 1440px) {
-  nav { padding: 18px 100px; }
+  .top-nav { padding: 18px 100px; }
   .section-inner { max-width: 1400px; }
-  #hero     { padding: 110px 100px 80px; }
-  #works    { padding: 110px 100px; }
-  #articles  { padding: 110px 100px; }
-  #contact   { padding: 110px 100px 120px; }
+  #hero     { padding: 80px 80px 40px; }
+  #works    { padding: 40px 80px; }
+  #articles  { padding: 40px 80px; }
+  #contact   { padding: 40px 80px; }
   .site-footer { padding: 40px 100px; }
   .hero-grid  { max-width: 1300px; }
 }
@@ -1118,17 +1245,25 @@ footer .footer-slogan {
 <!-- Scroll Progress Bar -->
 <div class="scroll-progress" id="scrollProgress"></div>
 
+<!-- Side Nav Dots -->
+<nav class="side-nav" id="sideNav">
+  <button class="side-nav-dot active" data-target="hero"><span class="dot-label">首页</span></button>
+  <button class="side-nav-dot" data-target="works"><span class="dot-label">作品</span></button>
+  <button class="side-nav-dot" data-target="articles"><span class="dot-label">文章</span></button>
+  <button class="side-nav-dot" data-target="tools-contact"><span class="dot-label">更多</span></button>
+</nav>
+
 <!-- Meteor Canvas -->
 <canvas id="meteor-canvas"></canvas>
 
 <!-- ====== NAVIGATION ====== -->
-<nav>
+<nav class="top-nav">
   <a href="#hero" class="nav-logo">YAN</a>
   <ul class="nav-links">
     <li><a href="#hero">PORTFOLIO</a></li>
     <li><a href="#works">WORKS</a></li>
     <li><a href="#articles">ARTICLES</a></li>
-    <li><a href="#contact">CONTACT</a></li>
+    <li><a href="#tools-contact">MORE</a></li>
   </ul>
 </nav>
 
@@ -1157,7 +1292,7 @@ footer .footer-slogan {
         </div>
         <div class="hero-actions">
           <a href="#works" class="btn btn-primary">查看作品</a>
-          <a href="#contact" class="btn btn-outline">与我联系</a>
+          <a href="#tools-contact" class="btn btn-outline">与我联系</a>
         </div>
       </div>
 
@@ -1173,18 +1308,20 @@ footer .footer-slogan {
         <div class="hero-chat-panel" id="heroChatPanel">
           <div class="chat-panel-header">
             <div class="chat-panel-avatar">
-              <img src="avatar.png" alt="Yan">
+              <img id="chatAvatarImg" src="avatar.png" alt="Yan">
             </div>
             <div class="chat-panel-info">
-              <h4>Yan的数字分身</h4>
-              <span>在线</span>
+              <h4 id="chatPanelName">Yan的数字分身</h4>
+              <span id="chatPanelStatus">在线</span>
             </div>
+            <button class="chat-close-btn" id="chatCloseBtn" title="关闭对话">&#10005;</button>
           </div>
           <div class="chat-panel-messages" id="chatMessages">
-            <div class="chat-message bot">
+            <div class="chat-message bot" id="welcomeMessage">
               嗨！我是 Yan 的数字分身，有什么我可以帮助你的吗？
             </div>
           </div>
+          <div class="chat-quick-replies" id="chatQuickReplies" style="display:none;"></div>
           <div class="chat-panel-input">
             <input type="text" id="chatInput" placeholder="输入消息..." />
             <button class="chat-send-btn" id="chatSend">
@@ -1265,28 +1402,25 @@ footer .footer-slogan {
   </div>
 </section>
 
-<!-- ====== SECTION 3.5 — TOOLS ====== -->
-<section id="tools" class="anim-section">
-  <div class="section-inner">
-    <p class="section-label">USEFUL TOOLS</p>
-    <h2 class="section-heading">常用<span class="accent">·</span>工具</h2>
-
-    <div class="tools-showcase" id="toolsGrid">
-      <!-- Dynamic loaded from API -->
+<!-- ====== SECTION 3.5 — TOOLS & CONTACT ====== -->
+<section id="tools-contact" class="anim-section">
+  <div class="tools-contact-grid">
+    <!-- 左栏：常用工具 -->
+    <div class="tools-col">
+      <p class="section-label">USEFUL TOOLS</p>
+      <h2 class="section-heading">常用<span class="accent">·</span>工具</h2>
+      <div class="tools-showcase" id="toolsGrid">
+        <!-- Dynamic loaded from API -->
+      </div>
+      <a href="all.html?tab=tools" class="view-all-link">查看全部工具 <span class="arrow">→</span></a>
     </div>
-
-    <a href="all.html?tab=tools" class="view-all-link">查看全部工具 <span class="arrow">→</span></a>
-  </div>
-</section>
-
-<!-- ====== SECTION 4 — CONTACT ====== -->
-<section id="contact" class="anim-section">
-  <div class="section-inner" style="text-align:center;">
-    <p class="section-label">GET IN TOUCH</p>
-    <h2 class="section-heading" style="margin-bottom:50px;">联系<span class="accent">我</span></h2>
-
-    <div class="contact-grid" id="contactGrid">
-      <!-- Dynamic loaded from API -->
+    <!-- 右栏：联系我 -->
+    <div class="contact-col">
+      <p class="section-label">GET IN TOUCH</p>
+      <h2 class="section-heading">联系<span class="accent">我</span></h2>
+      <div class="contact-grid" id="contactGrid">
+        <!-- Dynamic loaded from API -->
+      </div>
     </div>
   </div>
 </section>
@@ -1381,14 +1515,14 @@ footer .footer-slogan {
       return;
     }
     var grid = document.getElementById('articlesGrid');
-    grid.innerHTML = articles.map(function(a) {
+    var top = articles.slice(0, 6);
+    grid.innerHTML = top.map(function(a) {
       var href = a.link ? ' href="' + escAttr(a.link) + '"' : ' href="#"';
       return '<a class="article-card"' + href + '>'
         + '<div class="article-card-thumb">' + (a.image ? '<img src="' + escHtml(a.image) + '" alt="">' : '<span class="thumb-icon">' + escHtml(a.icon || '✱') + '</span>') + '</div>'
         + '<div class="article-card-body">'
         + '<span class="article-card-date">' + escHtml(a.date || '') + '</span>'
         + '<h3>' + escHtml(a.title) + '</h3>'
-        + '<p>' + escHtml(a.summary || '') + '</p>'
         + '</div></a>';
     }).join('');
   }
@@ -1404,7 +1538,7 @@ footer .footer-slogan {
         toolsEl.closest('section').style.display = 'none';
         return;
       }
-      var top = tools.slice(0, 6);
+      var top = tools.slice(0, 10);
       toolsEl.innerHTML = top.map(function(t) {
         var iconHtml = '';
         if (t.icon) {
@@ -1740,6 +1874,9 @@ footer .footer-slogan {
 
   let chatOpen = false;
 
+  // Load avatar config from server
+  if (IS_SERVER) loadAvatarConfig();
+
   function syncChatPanelHeight() {
     if (heroTextCol && heroChatPanel) {
       const leftHeight = heroTextCol.offsetHeight;
@@ -1777,6 +1914,14 @@ footer .footer-slogan {
     }
   });
 
+  var chatCloseBtn = document.getElementById('chatCloseBtn');
+  if (chatCloseBtn) {
+    chatCloseBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeChatPanel();
+    });
+  }
+
   const botResponses = [
     '很高兴与你交流！',
     '这个问题很有意思，让我想想...',
@@ -1787,6 +1932,46 @@ footer .footer-slogan {
     '我理解你的想法了。',
     '有趣的见解！'
   ];
+
+  // ── Load Avatar Config ──
+  async function loadAvatarConfig() {
+    try {
+      var cfg = await fetchAPI('/api/avatar');
+      if (!cfg) return;
+      // Update name
+      var nameEl = document.getElementById('chatPanelName');
+      if (nameEl && cfg.name) nameEl.textContent = cfg.name;
+      // Update status
+      var statusEl = document.getElementById('chatPanelStatus');
+      if (statusEl && cfg.statusText) statusEl.textContent = cfg.statusText;
+      // Update avatar
+      var imgEl = document.getElementById('chatAvatarImg');
+      if (imgEl && cfg.avatar) imgEl.src = cfg.avatar;
+      // Update welcome message
+      var welcomeEl = document.getElementById('welcomeMessage');
+      if (welcomeEl && cfg.welcomeMessage) welcomeEl.textContent = cfg.welcomeMessage;
+      // Update responses
+      if (cfg.responses && cfg.responses.length > 0) {
+        botResponses.length = 0;
+        cfg.responses.forEach(function(r) { botResponses.push(r); });
+      }
+      // Update quick replies
+      if (cfg.quickReplies && cfg.quickReplies.length > 0) {
+        var qrContainer = document.getElementById('chatQuickReplies');
+        qrContainer.style.display = '';
+        qrContainer.innerHTML = cfg.quickReplies.map(function(text) {
+          return '<button class="chat-quick-reply-btn">' + escHtml(text) + '</button>';
+        }).join('');
+        // Bind click events
+        qrContainer.querySelectorAll('.chat-quick-reply-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            chatInput.value = btn.textContent;
+            sendMessage();
+          });
+        });
+      }
+    } catch(e) {}
+  }
 
   function sendMessage() {
     const message = chatInput.value.trim();
@@ -1880,6 +2065,41 @@ footer .footer-slogan {
   loadArticles();
   loadTools();
   loadContact();
+
+  // ── Side Nav Dots: click to scroll ──
+  var sideNav = document.getElementById('sideNav');
+  var sectionIds = ['hero', 'works', 'articles', 'tools-contact'];
+  sideNav.addEventListener('click', function(e) {
+    var dot = e.target.closest('.side-nav-dot');
+    if (!dot) return;
+    var target = dot.getAttribute('data-target');
+    var section = document.getElementById(target);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // ── Side Nav Dots: highlight on scroll ──
+  var sideDots = sideNav.querySelectorAll('.side-nav-dot');
+  function updateActiveDot() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var viewH = window.innerHeight;
+    var currentId = sectionIds[0];
+    for (var i = 0; i < sectionIds.length; i++) {
+      var sec = document.getElementById(sectionIds[i]);
+      if (sec) {
+        var rect = sec.getBoundingClientRect();
+        if (rect.top <= viewH * 0.4) {
+          currentId = sectionIds[i];
+        }
+      }
+    }
+    sideDots.forEach(function(d) {
+      d.classList.toggle('active', d.getAttribute('data-target') === currentId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveDot, { passive: true });
+  updateActiveDot();
 
 })();
 </script>

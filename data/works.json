@@ -1,0 +1,19 @@
+[
+  {
+    "id": "1780827401573",
+    "title": "个人主页网站 PERSONAL PORTFOLIO WEB",
+    "description": "个人作品集网站，极简响应式布局，清晰展示作品、个人简介与联系方式",
+    "image": "/uploads/portfolio-demo.gif",
+    "link": "http://localhost:3000/#",
+    "createdAt": "2026-06-07T10:16:41.573Z",
+    "updatedAt": "2026-06-07T11:19:24.592Z"
+  },
+  {
+    "id": "1780827472197",
+    "title": "桌面宠物Deskpet",
+    "description": "桌面宠物是可常驻电脑桌面、互动逗趣的轻量化虚拟小玩伴。",
+    "image": "/uploads/desktop-pet.gif",
+    "link": "",
+    "createdAt": "2026-06-07T10:17:52.197Z"
+  }
+]

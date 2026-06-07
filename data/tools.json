@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1780835512911",
+    "name": "GitHub",
+    "description": "",
+    "category": "编程",
+    "icon": "/uploads/favicon-github.com-1780836194562.ico",
+    "link": "https://github.com/",
+    "createdAt": "2026-06-07T12:31:52.911Z",
+    "updatedAt": "2026-06-07T12:43:14.051Z"
+  },
+  {
+    "id": "1780836160277",
+    "name": "小红书",
+    "description": "",
+    "category": "自媒体",
+    "icon": "/uploads/favicon-www.xiaohongshu.com-1780836160414.ico",
+    "link": "https://www.xiaohongshu.com/explore",
+    "createdAt": "2026-06-07T12:42:40.278Z"
+  },
+  {
+    "id": "1780836308879",
+    "name": "百度",
+    "description": "",
+    "category": "搜索",
+    "icon": "/uploads/favicon-www.baidu.com-1780836308946.ico",
+    "link": "https://www.baidu.com/",
+    "createdAt": "2026-06-07T12:45:08.879Z"
+  }
+]
