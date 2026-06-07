@@ -186,6 +186,7 @@ app.post('/api/articles', authMiddleware, (req, res) => {
     title: req.body.title || '',
     date: req.body.date || '',
     summary: req.body.summary || '',
+    image: req.body.image || '',
     icon: req.body.icon || '✱',
     link: req.body.link || '',
     createdAt: new Date().toISOString()

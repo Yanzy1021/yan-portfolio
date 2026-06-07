@@ -1092,20 +1092,23 @@ body {
         grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#9998;</div><p>暂无文章，点击上方按钮新增</p></div>';
         return;
       }
-      grid.innerHTML = articles.map(a => `
-        <div class="data-card">
-          <div class="data-card-header">
-            <h3>${escHtml(a.icon || '')} ${escHtml(a.title)}</h3>
-            <div class="data-card-actions">
-              <button class="btn-edit" onclick="editArticle('${a.id}')" title="编辑">&#9998;</button>
-              <button class="btn-delete" onclick="deleteArticle('${a.id}')" title="删除">&#10006;</button>
-            </div>
-          </div>
-          <div class="data-card-meta">${escHtml(a.date || '')}</div>
-          <div class="data-card-desc">${escHtml(a.summary || '')}</div>
-          ${a.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(a.link) + '</div>' : ''}
-        </div>
-      `).join('');
+      grid.innerHTML = articles.map(a => {
+        let thumb = '';
+        if (a.image) {
+          thumb = '<div class="data-card-thumb"><img src="' + escHtml(a.image) + '" alt=""></div>';
+        }
+        return '<div class="data-card">' + thumb
+          + '<div class="data-card-header">'
+          + '<h3>' + escHtml(a.title) + '</h3>'
+          + '<div class="data-card-actions">'
+          + '<button class="btn-edit" onclick="editArticle(\'' + a.id + '\')" title="编辑">&#9998;</button>'
+          + '<button class="btn-delete" onclick="deleteArticle(\'' + a.id + '\')" title="删除">&#10006;</button>'
+          + '</div></div>'
+          + '<div class="data-card-meta">' + escHtml(a.date || '') + '</div>'
+          + '<div class="data-card-desc">' + escHtml(a.summary || '') + '</div>'
+          + (a.link ? '<div class="data-card-meta" style="margin-top:8px;">' + escHtml(a.link) + '</div>' : '')
+          + '</div>';
+      }).join('');
     } catch(e) {
       grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
     }
@@ -1113,32 +1116,67 @@ body {
   window.loadArticles = loadArticles;
 
   let editingArticleId = null;
+  let articleUploadedUrl = '';
   window.openArticleModal = function(id) {
     editingArticleId = id || null;
+    articleUploadedUrl = '';
     const title = id ? '编辑文章' : '新增文章';
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').innerHTML = `
       <div class="form-group"><label>标题</label><input id="mArtTitle" placeholder="文章标题"></div>
-      <div class="form-row">
-        <div class="form-group"><label>日期</label><input id="mArtDate" placeholder="例如 2026.06"></div>
-        <div class="form-group"><label>图标</label><input id="mArtIcon" placeholder="例如 ✱" maxlength="2"></div>
+      <div class="form-group"><label>描述</label><textarea id="mArtSummary" placeholder="文章摘要/描述"></textarea></div>
+      <div class="form-group">
+        <label>封面图片</label>
+        <div class="upload-zone" id="articleUploadZone">
+          <input type="file" id="articleFileInput" accept="image/*" style="display:none;">
+          <div class="upload-icon">&#8679;</div>
+          <div class="upload-text">拖拽图片到此处，或 <strong>点击上传</strong></div>
+          <div class="upload-hint">支持 JPG、PNG、GIF、WebP（最大 10MB）</div>
+          <img class="upload-preview" id="articlePreview" alt="">
+          <button class="upload-remove" id="articleUploadRemove" onclick="removeArticleUpload(event)">&times;</button>
+          <div class="upload-loading"><div class="upload-spinner"></div></div>
+        </div>
       </div>
-      <div class="form-group"><label>摘要</label><textarea id="mArtSummary" placeholder="文章摘要"></textarea></div>
-      <div class="form-group"><label>链接</label><input id="mArtLink" placeholder="文章链接（可选）"></div>
+      <div class="form-row">
+        <div class="form-group"><label>发布日期</label><input id="mArtDate" placeholder="例如 2026.06"></div>
+        <div class="form-group"><label>链接</label><input id="mArtLink" placeholder="文章链接（可选）"></div>
+      </div>
       <div class="form-actions">
         <button class="btn-cancel" onclick="closeModal()">取消</button>
         <button class="btn-submit" onclick="saveArticle()">保存</button>
       </div>
     `;
+
+    // Bind upload events
+    const zone = document.getElementById('articleUploadZone');
+    const fileInput = document.getElementById('articleFileInput');
+
+    zone.addEventListener('click', function(e) {
+      if (e.target.closest('.upload-remove')) return;
+      fileInput.click();
+    });
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); zone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) handleArticleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) handleArticleFile(fileInput.files[0]);
+    });
+
     if (id) {
       api('GET', '/api/articles').then(articles => {
         const a = articles.find(x => x.id === id);
         if (a) {
           document.getElementById('mArtTitle').value = a.title || '';
-          document.getElementById('mArtDate').value = a.date || '';
-          document.getElementById('mArtIcon').value = a.icon || '';
           document.getElementById('mArtSummary').value = a.summary || '';
+          document.getElementById('mArtDate').value = a.date || '';
           document.getElementById('mArtLink').value = a.link || '';
+          if (a.image) {
+            articleUploadedUrl = a.image;
+            showArticlePreview(a.image);
+          }
         }
       });
     }
@@ -1150,9 +1188,9 @@ body {
   window.saveArticle = async function() {
     const data = {
       title: document.getElementById('mArtTitle').value.trim(),
-      date: document.getElementById('mArtDate').value.trim(),
-      icon: document.getElementById('mArtIcon').value.trim(),
       summary: document.getElementById('mArtSummary').value.trim(),
+      image: articleUploadedUrl || '',
+      date: document.getElementById('mArtDate').value.trim(),
       link: document.getElementById('mArtLink').value.trim()
     };
     if (!data.title) { showToast('请输入标题', 'error'); return; }
@@ -1368,6 +1406,53 @@ body {
       const videoPreview = document.getElementById('workVideoPreview');
       if (imgPreview) { imgPreview.src = ''; imgPreview.style.display = 'none'; }
       if (videoPreview) { videoPreview.src = ''; videoPreview.style.display = 'none'; }
+    }
+  };
+
+  // ── Article Image Upload ──
+  function showArticlePreview(url) {
+    const zone = document.getElementById('articleUploadZone');
+    if (!zone) return;
+    const preview = document.getElementById('articlePreview');
+    if (!preview) return;
+    preview.src = url;
+    zone.classList.add('has-file');
+  }
+
+  async function handleArticleFile(file) {
+    const zone = document.getElementById('articleUploadZone');
+    if (!zone) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    if (!allowed.includes(ext)) {
+      showToast('不支持的文件类型，仅支持图片', 'error');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('文件不能超过 10MB', 'error');
+      return;
+    }
+    zone.classList.add('uploading');
+    try {
+      const url = await uploadFile(file);
+      articleUploadedUrl = url;
+      showArticlePreview(url);
+    } catch(e) {
+      showToast('上传失败：' + (e.message || '未知错误'), 'error');
+    } finally {
+      zone.classList.remove('uploading');
+    }
+  }
+  window.handleArticleFile = handleArticleFile;
+
+  window.removeArticleUpload = function(e) {
+    e.stopPropagation();
+    articleUploadedUrl = '';
+    const zone = document.getElementById('articleUploadZone');
+    if (zone) {
+      zone.classList.remove('has-file');
+      const preview = document.getElementById('articlePreview');
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
     }
   };
 

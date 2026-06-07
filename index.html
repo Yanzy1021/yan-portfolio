@@ -1314,7 +1314,7 @@ footer .footer-slogan {
     grid.innerHTML = articles.map(function(a) {
       var href = a.link ? ' href="' + escAttr(a.link) + '"' : ' href="#"';
       return '<a class="article-card"' + href + '>'
-        + '<div class="article-card-thumb"><span class="thumb-icon">' + escHtml(a.icon || '✱') + '</span></div>'
+        + '<div class="article-card-thumb">' + (a.image ? '<img src="' + escHtml(a.image) + '" alt="">' : '<span class="thumb-icon">' + escHtml(a.icon || '✱') + '</span>') + '</div>'
         + '<div class="article-card-body">'
         + '<span class="article-card-date">' + escHtml(a.date || '') + '</span>'
         + '<h3>' + escHtml(a.title) + '</h3>'
