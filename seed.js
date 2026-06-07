@@ -1,14 +1,14 @@
 /**
- * seed.js - 初始化 Vercel KV 数据
- * 用法: npx vercel env pull .env.local && node seed.js
+ * seed.js - 初始化 Upstash Redis 数据
+ * 用法: 设置 UPSTASH_REDIS_REST_URL 和 UPSTASH_REDIS_REST_TOKEN 环境变量后运行 node seed.js
  *
- * 将本地 data/*.json 的数据导入 Vercel KV
+ * 将本地 data/*.json 的数据导入 Upstash Redis
  */
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 const fs = require('fs');
 const path = require('path');
 
-const KV_KEYS = {
+const REDIS_KEYS = {
   works: 'portfolio:works',
   articles: 'portfolio:articles',
   tools: 'portfolio:tools',
@@ -17,18 +17,23 @@ const KV_KEYS = {
   admin: 'portfolio:admin',
 };
 
-async function seed() {
-  console.log('开始导入数据到 Vercel KV...\n');
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
-  for (const [key, kvKey] of Object.entries(KV_KEYS)) {
+async function seed() {
+  console.log('开始导入数据到 Upstash Redis...\n');
+
+  for (const [key, redisKey] of Object.entries(REDIS_KEYS)) {
     const fp = path.join(__dirname, 'data', key + '.json');
     if (!fs.existsSync(fp)) {
       console.log(`  跳过 ${key}.json（文件不存在）`);
       continue;
     }
     const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
-    await kv.set(kvKey, data);
-    console.log(`  ${key}: ${JSON.stringify(data).length} bytes -> ${kvKey}`);
+    await redis.set(redisKey, JSON.stringify(data));
+    console.log(`  ${key}: ${JSON.stringify(data).length} bytes -> ${redisKey}`);
   }
 
   console.log('\n导入完成！');
