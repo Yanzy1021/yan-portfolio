@@ -732,6 +732,9 @@ body {
       <a data-panel="articles" onclick="switchPanel('articles', this)">
         <span class="nav-icon">&#9998;</span> 文章 / 笔记
       </a>
+      <a data-panel="tools" onclick="switchPanel('tools', this)">
+        <span class="nav-icon">&#128295;</span> 常用工具
+      </a>
       <a data-panel="contact" onclick="switchPanel('contact', this)">
         <span class="nav-icon">&#9993;</span> 联系方式
       </a>
@@ -761,7 +764,7 @@ body {
       <div class="stats-bar" id="statsBar">
         <div class="stat-card"><div class="stat-num" id="statWorks">0</div><div class="stat-label">作品数</div></div>
         <div class="stat-card"><div class="stat-num" id="statArticles">0</div><div class="stat-label">文章数</div></div>
-        <div class="stat-card"><div class="stat-num" id="statContact">4</div><div class="stat-label">联系渠道</div></div>
+        <div class="stat-card"><div class="stat-num" id="statTools">0</div><div class="stat-label">工具数</div></div>
         <div class="stat-card"><div class="stat-num">v2.0.0</div><div class="stat-label">当前版本</div></div>
       </div>
       <p style="color:rgba(26,26,46,0.35);font-size:13px;">通过左侧菜单管理你的作品集、文章和联系方式。</p>
@@ -777,6 +780,12 @@ body {
     <div class="admin-panel" id="panel-articles">
       <button class="btn-add" onclick="openArticleModal()">+ 新增文章</button>
       <div class="data-grid" id="articlesGrid" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Tools Panel -->
+    <div class="admin-panel" id="panel-tools">
+      <button class="btn-add" onclick="openToolModal()">+ 新增工具</button>
+      <div class="data-grid" id="toolsGrid" style="margin-top:20px;"></div>
     </div>
 
     <!-- Contact Panel -->
@@ -839,6 +848,16 @@ body {
     localStorage.removeItem('admin_token');
   }
 
+  // ── 401 自动跳转登录 ──
+  function handleUnauthorized() {
+    clearToken();
+    document.getElementById('adminLayout').classList.remove('active');
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    showToast('登录已过期，请重新登录', 'error');
+  }
+
   async function api(method, url, data) {
     const opts = {
       method: method,
@@ -849,6 +868,10 @@ body {
     }
     if (data) opts.body = JSON.stringify(data);
     const res = await fetch(API + url, opts);
+    if (res.status === 401 && url !== '/api/login') {
+      handleUnauthorized();
+      throw new Error('未登录或登录已过期');
+    }
     return res.json();
   }
 
@@ -910,7 +933,7 @@ body {
     document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     if (el) el.classList.add('active');
-    const titles = { dashboard: '管理概览', works: '作品集管理', articles: '文章/笔记管理', contact: '联系方式管理', password: '修改密码' };
+    const titles = { dashboard: '管理概览', works: '作品集管理', articles: '文章/笔记管理', tools: '常用工具管理', contact: '联系方式管理', password: '修改密码' };
     document.getElementById('panelTitle').innerHTML = titles[name] || name;
   };
 
@@ -924,12 +947,14 @@ body {
 
   async function loadStats() {
     try {
-      const [works, articles] = await Promise.all([
+      const [works, articles, tools] = await Promise.all([
         api('GET', '/api/works'),
-        api('GET', '/api/articles')
+        api('GET', '/api/articles'),
+        api('GET', '/api/tools')
       ]);
       document.getElementById('statWorks').textContent = (works || []).length;
       document.getElementById('statArticles').textContent = (articles || []).length;
+      document.getElementById('statTools').textContent = (tools || []).length;
     } catch(e) {}
   }
 
@@ -1222,6 +1247,159 @@ body {
     }
   };
 
+  // ── Tools CRUD ──
+  async function loadTools() {
+    const grid = document.getElementById('toolsGrid');
+    try {
+      const tools = await api('GET', '/api/tools');
+      if (!tools || tools.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚙</div><p>暂无工具，点击上方按钮新增</p></div>';
+        return;
+      }
+      grid.innerHTML = tools.map(t => {
+        let thumb = '';
+        if (t.icon) {
+          thumb = '<div class="data-card-thumb"><img src="' + escHtml(t.icon) + '" alt="" style="object-fit:contain;padding:8px;"></div>';
+        }
+        return '<div class="data-card">' + thumb
+          + '<div class="data-card-header">'
+          + '<h3>' + escHtml(t.name) + '</h3>'
+          + '<div class="data-card-actions">'
+          + '<button class="btn-edit" onclick="editTool(\'' + t.id + '\')" title="编辑">&#9998;</button>'
+          + '<button class="btn-delete" onclick="deleteTool(\'' + t.id + '\')" title="删除">&#10006;</button>'
+          + '</div></div>'
+          + (t.category ? '<div class="data-card-meta">' + escHtml(t.category) + '</div>' : '')
+          + '<div class="data-card-desc">' + escHtml(t.description) + '</div>'
+          + (t.link ? '<div class="data-card-meta" style="margin-top:8px;"><a href="' + escHtml(t.link) + '" target="_blank" style="color:rgba(26,26,46,0.4);text-decoration:none;font-size:11px;">' + escHtml(t.link) + '</a></div>' : '')
+          + '</div>';
+      }).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-state"><p>加载失败，请确认服务已启动</p></div>';
+    }
+  }
+  window.loadTools = loadTools;
+
+  let editingToolId = null;
+  let toolUploadedUrl = '';
+  window.openToolModal = function(id) {
+    editingToolId = id || null;
+    toolUploadedUrl = '';
+    const title = id ? '编辑工具' : '新增工具';
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="form-group"><label>名称</label><input id="mToolName" placeholder="工具名称"></div>
+      <div class="form-group"><label>分类标签</label><input id="mToolCategory" placeholder="如：设计工具 / AI 工具"></div>
+      <div class="form-group"><label>简介</label><textarea id="mToolDesc" placeholder="工具简介"></textarea></div>
+      <div class="form-group">
+        <label>图标 / 封面</label>
+        <div class="upload-zone" id="toolUploadZone">
+          <input type="file" id="toolFileInput" accept="image/*" style="display:none;">
+          <div class="upload-icon">&#8679;</div>
+          <div class="upload-text">拖拽图片到此处，或 <strong>点击上传</strong></div>
+          <div class="upload-hint">支持 JPG、PNG、GIF、WebP（最大 10MB）</div>
+          <img class="upload-preview" id="toolPreview" alt="">
+          <button class="upload-remove" id="toolUploadRemove" onclick="removeToolUpload(event)">×</button>
+          <div class="upload-loading"><div class="upload-spinner"></div></div>
+        </div>
+      </div>
+      <div class="form-group"><label>链接</label><input id="mToolLink" placeholder="工具网址（可选）"></div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-submit" onclick="saveTool()">保存</button>
+      </div>
+    `;
+    const zone = document.getElementById('toolUploadZone');
+    const fileInput = document.getElementById('toolFileInput');
+    zone.addEventListener('click', function(e) {
+      if (e.target.closest('.upload-remove')) return;
+      fileInput.click();
+    });
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); zone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) handleToolFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) handleToolFile(fileInput.files[0]);
+    });
+    if (id) {
+      api('GET', '/api/tools').then(tools => {
+        const t = tools.find(x => x.id === id);
+        if (t) {
+          document.getElementById('mToolName').value = t.name || '';
+          document.getElementById('mToolCategory').value = t.category || '';
+          document.getElementById('mToolDesc').value = t.description || '';
+          document.getElementById('mToolLink').value = t.link || '';
+          if (t.icon) { toolUploadedUrl = t.icon; showToolPreview(t.icon); }
+        }
+      });
+    }
+    document.getElementById('modalOverlay').classList.add('active');
+  };
+
+  window.editTool = function(id) { openToolModal(id); };
+
+  window.saveTool = async function() {
+    const data = {
+      name: document.getElementById('mToolName').value.trim(),
+      category: document.getElementById('mToolCategory').value.trim(),
+      description: document.getElementById('mToolDesc').value.trim(),
+      icon: toolUploadedUrl || '',
+      link: document.getElementById('mToolLink').value.trim()
+    };
+    if (!data.name) { showToast('请输入工具名称', 'error'); return; }
+    try {
+      if (editingToolId) {
+        await api('PUT', '/api/tools/' + editingToolId, data);
+        showToast('工具已更新', 'success');
+      } else {
+        await api('POST', '/api/tools', data);
+        showToast('工具已添加', 'success');
+      }
+      closeModal(); loadTools(); loadStats();
+    } catch(e) { showToast('保存失败', 'error'); }
+  };
+
+  window.deleteTool = async function(id) {
+    if (!confirm('确定删除这个工具吗？')) return;
+    try {
+      await api('DELETE', '/api/tools/' + id);
+      showToast('已删除', 'success'); loadTools(); loadStats();
+    } catch(e) { showToast('删除失败', 'error'); }
+  };
+
+  function showToolPreview(url) {
+    const zone = document.getElementById('toolUploadZone');
+    if (!zone) return;
+    const preview = document.getElementById('toolPreview');
+    if (!preview) return;
+    preview.src = url; zone.classList.add('has-file');
+  }
+
+  async function handleToolFile(file) {
+    const zone = document.getElementById('toolUploadZone');
+    if (!zone) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowed = ['jpg','jpeg','png','gif','webp','svg','ico'];
+    if (!allowed.includes(ext)) { showToast('不支持的文件类型', 'error'); return; }
+    if (file.size > 10*1024*1024) { showToast('文件不能超过 10MB', 'error'); return; }
+    zone.classList.add('uploading');
+    try {
+      const url = await uploadFile(file);
+      toolUploadedUrl = url; showToolPreview(url);
+    } catch(e) { showToast('上传失败：' + (e.message || '未知错误'), 'error'); }
+    finally { zone.classList.remove('uploading'); }
+  }
+  window.handleToolFile = handleToolFile;
+
+  window.removeToolUpload = function(e) {
+    e.stopPropagation();
+    toolUploadedUrl = '';
+    const zone = document.getElementById('toolUploadZone');
+    if (zone) { zone.classList.remove('has-file'); const p = document.getElementById('toolPreview'); if(p){p.src='';p.style.display='none';} }
+  };
+
   // ── Contact ──
   let contactData = {};
   async function loadContact() {
@@ -1347,6 +1525,10 @@ body {
       headers: token ? { 'Authorization': 'Bearer ' + token } : {},
       body: formData
     });
+    if (res.status === 401) {
+      handleUnauthorized();
+      throw new Error('未登录或登录已过期');
+    }
     const json = await res.json();
     if (json.error) throw new Error(json.error);
     return json.url;
@@ -1462,11 +1644,21 @@ body {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Auto-login check ──
+  // ── Auto-login check（验证 token 是否仍有效） ──
   if (getToken()) {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('adminLayout').classList.add('active');
-    loadAll();
+    fetch(API + '/api/check-auth', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    }).then(res => {
+      if (res.ok) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminLayout').classList.add('active');
+        loadAll();
+      } else {
+        clearToken();
+      }
+    }).catch(() => {
+      clearToken();
+    });
   }
 })();
 </script>

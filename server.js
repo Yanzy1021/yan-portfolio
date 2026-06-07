@@ -126,11 +126,31 @@ app.post('/api/change-password', authMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
+// ========== Pagination Helper ==========
+function paginate(data, page = 1, limit = 12) {
+  const total = data.length;
+  const totalPages = Math.ceil(total / limit);
+  const p = Math.max(1, parseInt(page) || 1);
+  const start = (p - 1) * limit;
+  const items = data.slice(start, start + limit);
+  return { items, total, page: p, limit, totalPages };
+}
+
 // ========== Works API ==========
 
-// GET /api/works - 获取所有作品（公开）
+// GET /api/works - 获取作品（支持分页）
 app.get('/api/works', (req, res) => {
   const works = readJSON('works.json') || [];
+  if (req.query.page) {
+    const result = paginate(works, req.query.page, parseInt(req.query.limit) || 12);
+    return res.json({
+      items: result.items,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages
+    });
+  }
   res.json(works);
 });
 
@@ -172,9 +192,19 @@ app.delete('/api/works/:id', authMiddleware, (req, res) => {
 
 // ========== Articles API ==========
 
-// GET /api/articles - 获取所有文章（公开）
+// GET /api/articles - 获取文章（支持分页）
 app.get('/api/articles', (req, res) => {
   const articles = readJSON('articles.json') || [];
+  if (req.query.page) {
+    const result = paginate(articles, req.query.page, parseInt(req.query.limit) || 12);
+    return res.json({
+      items: result.items,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages
+    });
+  }
   res.json(articles);
 });
 
@@ -216,6 +246,61 @@ app.delete('/api/articles/:id', authMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
+// ========== Tools API ==========
+
+// GET /api/tools - 获取工具列表（公开，支持分页）
+app.get('/api/tools', (req, res) => {
+  const tools = readJSON('tools.json') || [];
+  if (req.query.page) {
+    const result = paginate(tools, req.query.page, parseInt(req.query.limit) || 12);
+    return res.json({
+      items: result.items,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages
+    });
+  }
+  res.json(tools);
+});
+
+// POST /api/tools - 新增工具（需登录）
+app.post('/api/tools', authMiddleware, (req, res) => {
+  const tools = readJSON('tools.json') || [];
+  const tool = {
+    id: Date.now().toString(),
+    name: req.body.name || '',
+    description: req.body.description || '',
+    category: req.body.category || '',
+    icon: req.body.icon || '',
+    link: req.body.link || '',
+    createdAt: new Date().toISOString()
+  };
+  tools.push(tool);
+  writeJSON('tools.json', tools);
+  res.json(tool);
+});
+
+// PUT /api/tools/:id - 编辑工具（需登录）
+app.put('/api/tools/:id', authMiddleware, (req, res) => {
+  const tools = readJSON('tools.json') || [];
+  const idx = tools.findIndex(t => t.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '工具不存在' });
+  tools[idx] = { ...tools[idx], ...req.body, id: tools[idx].id, updatedAt: new Date().toISOString() };
+  writeJSON('tools.json', tools);
+  res.json(tools[idx]);
+});
+
+// DELETE /api/tools/:id - 删除工具（需登录）
+app.delete('/api/tools/:id', authMiddleware, (req, res) => {
+  let tools = readJSON('tools.json') || [];
+  const idx = tools.findIndex(t => t.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '工具不存在' });
+  tools.splice(idx, 1);
+  writeJSON('tools.json', tools);
+  res.json({ success: true });
+});
+
 // ========== Contact API ==========
 
 // GET /api/contact - 获取联系方式（公开）
@@ -230,6 +315,11 @@ app.put('/api/contact', authMiddleware, (req, res) => {
   const updated = { ...contact, ...req.body };
   writeJSON('contact.json', updated);
   res.json(updated);
+});
+
+// GET /api/check-auth - 检查登录状态（需登录）
+app.get('/api/check-auth', authMiddleware, (req, res) => {
+  res.json({ valid: true, username: 'admin' });
 });
 
 // ========== Upload API ==========
